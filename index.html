@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>Skybound Lovers</title>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <style>
@@ -10,176 +10,253 @@
       margin: 0;
       overflow: hidden;
       background: linear-gradient(to top, #a0d8f1, #e0f7ff);
-      font-family: 'Press Start 2P', cursive; /* Font baru */
+      font-family: 'Press Start 2P', cursive;
       color: #333;
+      display: flex; /* Menggunakan flexbox untuk centering */
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh; /* Pastikan body mengisi seluruh tinggi viewport */
     }
     canvas {
       display: block;
       margin: 0 auto;
       background-color: #b3e5fc;
-      border-radius: 15px; /* Sudut membulat untuk kanvas */
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3); /* Bayangan untuk kanvas */
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      max-width: 100%; /* Pastikan kanvas tidak melebihi lebar viewport */
+      height: auto; /* Pertahankan rasio aspek */
     }
-    #startScreen {
+    #startScreen, #gameOverScreen {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
       text-align: center;
       color: #fff;
-      font-size: 20px; /* Ukuran font disesuaikan */
-      display: none;
-      background: rgba(0,0,0,0.8); /* Lebih gelap */
-      padding: 40px; /* Padding lebih besar */
-      border-radius: 25px; /* Lebih membulat */
-      box-shadow: 0 0 30px rgba(0,0,0,0.7); /* Bayangan lebih kuat */
-      border: 3px solid #2196F3; /* Border biru */
-    }
-    #startScreen h1 {
-        font-size: 2.5em; /* Ukuran judul lebih besar */
-        color: #FFD700; /* Warna emas untuk judul */
-        text-shadow: 2px 2px 5px rgba(0,0,0,0.5);
-        margin-bottom: 30px;
-    }
-    .character-options {
-      display: flex;
-      gap: 40px; /* Jarak antar kartu lebih besar */
-      margin-top: 30px;
-      justify-content: center;
-    }
-    .character-card {
-      padding: 25px; /* Padding lebih besar */
-      border-radius: 20px; /* Lebih membulat */
-      background: rgba(255,255,255,0.15); /* Sedikit lebih transparan */
-      transition: all 0.4s ease; /* Transisi lebih halus */
-      cursor: pointer;
-      border: 2px solid transparent; /* Border awal transparan */
-    }
-    .character-card:hover {
-      transform: translateY(-10px) scale(1.08); /* Efek hover lebih dramatis */
-      background: rgba(255,255,255,0.3);
-      border: 2px solid #FFD700; /* Border emas saat hover */
-      box-shadow: 0 15px 25px rgba(0,0,0,0.4); /* Bayangan saat hover */
-    }
-    .character-image {
-      width: 160px; /* Ukuran gambar lebih besar */
-      height: 160px; /* Ukuran gambar lebih besar */
-      border-radius: 50%;
-      object-fit: cover;
-      border: 4px solid #fff; /* Border gambar lebih tebal */
-      margin-bottom: 20px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    }
-    .character-button {
-      padding: 12px 25px; /* Padding lebih besar */
-      border: none;
-      border-radius: 50px;
-      background: linear-gradient(45deg, #2196F3, #00BCD4); /* Gradient biru */
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-family: 'Press Start 2P', cursive;
-      font-size: 0.9em;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-    .character-button:hover {
-      background: linear-gradient(45deg, #1976D2, #0097A7); /* Gradient lebih gelap saat hover */
-      transform: translateY(-3px); /* Efek naik lebih tinggi */
-      box-shadow: 0 8px 15px rgba(0,0,0,0.3); /* Bayangan lebih kuat */
-    }
-    
-    #gameOverScreen {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      text-align: center;
-      color: #fff;
-      font-size: 20px; /* Ukuran font disesuaikan */
-      display: none;
-      background: rgba(0,0,0,0.9); /* Lebih gelap */
-      padding: 40px;
+      background: rgba(0,0,0,0.8);
+      padding: 20px; /* Padding disesuaikan */
       border-radius: 25px;
-      box-shadow: 0 0 40px rgba(0,0,0,0.8); /* Bayangan lebih kuat */
-      width: 320px; /* Lebar disesuaikan */
-      border: 3px solid #ff4081; /* Border pink */
+      box-shadow: 0 0 30px rgba(0,0,0,0.7);
+      border: 3px solid #2196F3;
+      max-width: 90%; /* Batasi lebar maksimum */
+      box-sizing: border-box; /* Pastikan padding termasuk dalam lebar */
+      display: none;
     }
-    #gameOverScreen h2 {
-        font-size: 2.2em;
-        color: #FF4081; /* Warna pink untuk judul */
+    #gameOverScreen {
+        border: 3px solid #ff4081;
+    }
+    #startScreen h1, #gameOverScreen h2 {
+        font-size: 1.8em; /* Ukuran judul disesuaikan */
+        color: #FFD700;
         text-shadow: 2px 2px 5px rgba(0,0,0,0.5);
         margin-bottom: 20px;
     }
-    #finalScore {
-        font-size: 1.5em;
-        margin-bottom: 25px;
-        color: #FFD700; /* Warna emas untuk skor akhir */
+    #gameOverScreen h2 {
+        color: #FF4081;
     }
-    .game-over-button {
-      padding: 15px 30px; /* Padding lebih besar */
-      margin-top: 25px;
+    .character-options {
+      display: flex;
+      flex-direction: row; /* Default row untuk desktop */
+      gap: 20px; /* Jarak antar kartu disesuaikan */
+      margin-top: 20px;
+      justify-content: center;
+      flex-wrap: wrap; /* Izinkan wrap di layar kecil */
+    }
+    .character-card {
+      padding: 15px; /* Padding disesuaikan */
+      border-radius: 20px;
+      background: rgba(255,255,255,0.15);
+      transition: all 0.4s ease;
+      cursor: pointer;
+      border: 2px solid transparent;
+      flex-basis: 45%; /* Lebar kartu di flexbox */
+      max-width: 180px; /* Batasi lebar maksimum kartu */
+      box-sizing: border-box;
+    }
+    .character-card:hover {
+      transform: translateY(-5px) scale(1.05); /* Efek hover disesuaikan */
+      background: rgba(255,255,255,0.3);
+      border: 2px solid #FFD700;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    }
+    .character-image {
+      width: 100px; /* Ukuran gambar disesuaikan */
+      height: 100px; /* Ukuran gambar disesuaikan */
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid #fff;
+      margin-bottom: 15px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    .character-button, .game-over-button {
+      padding: 10px 20px; /* Padding disesuaikan */
       border: none;
       border-radius: 50px;
-      background: linear-gradient(45deg, #ff4081, #e91e63); /* Gradient pink */
+      background: linear-gradient(45deg, #2196F3, #00BCD4);
       color: white;
       font-weight: bold;
       cursor: pointer;
       transition: all 0.3s ease;
-      font-size: 1.1em;
       font-family: 'Press Start 2P', cursive;
+      font-size: 0.8em; /* Ukuran font disesuaikan */
       text-transform: uppercase;
       letter-spacing: 1px;
+      width: 100%; /* Tombol mengisi lebar kartu */
+      box-sizing: border-box;
+    }
+    .character-button:hover {
+      background: linear-gradient(45deg, #1976D2, #0097A7);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+    }
+    
+    #finalScore {
+        font-size: 1.2em; /* Ukuran font disesuaikan */
+        margin-bottom: 20px;
+        color: #FFD700;
+    }
+    .game-over-button {
+      background: linear-gradient(45deg, #ff4081, #e91e63);
+      font-size: 1em;
+      margin-top: 20px;
     }
     .game-over-button:hover {
-      background: linear-gradient(45deg, #e91e63, #c2185b); /* Gradient lebih gelap saat hover */
-      transform: translateY(-4px); /* Efek naik lebih tinggi */
-      box-shadow: 0 8px 20px rgba(0,0,0,0.4); /* Bayangan lebih kuat */
+      background: linear-gradient(45deg, #e91e63, #c2185b);
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.3);
     }
 
-    /* Gaya untuk popup koin */
     #coinMilestonePopup {
       display: none;
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 250px; /* Ukuran gambar lebih besar */
+      width: 200px; /* Ukuran gambar disesuaikan */
       height: auto;
       opacity: 0;
       transition: opacity 0.5s ease-in-out;
       z-index: 100;
-      border-radius: 15px; /* Sudut membulat */
-      box-shadow: 0 0 30px rgba(255,255,0,0.9); /* Efek cahaya lebih kuat */
-      border: 3px solid #FFD700; /* Border emas */
+      border-radius: 15px;
+      box-shadow: 0 0 30px rgba(255,255,0,0.9);
+      border: 3px solid #FFD700;
+      max-width: 80%; /* Batasi lebar maksimum */
     }
 
-    /* Gaya untuk tampilan skor dan koin */
     #scoreDisplay {
         position: absolute;
-        top: 15px;
-        right: 15px;
-        background: rgba(0, 0, 0, 0.6); /* Latar belakang gelap transparan */
+        top: 10px; /* Posisi disesuaikan */
+        right: 10px; /* Posisi disesuaikan */
+        background: rgba(0, 0, 0, 0.6);
         color: #fff;
-        padding: 10px 15px;
+        padding: 8px 12px; /* Padding disesuaikan */
         border-radius: 10px;
         font-family: 'Press Start 2P', cursive;
-        font-size: 1em;
+        font-size: 0.8em; /* Ukuran font disesuaikan */
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 8px; /* Jarak antar elemen disesuaikan */
         box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        border: 2px solid #FFD700; /* Border emas */
+        border: 2px solid #FFD700;
+        z-index: 50; /* Pastikan di atas kanvas */
     }
     #scoreDisplay img {
-        width: 24px; /* Ukuran ikon koin */
-        height: 24px;
+        width: 20px; /* Ukuran ikon koin disesuaikan */
+        height: 20px;
         vertical-align: middle;
     }
     #scoreDisplay span {
-        margin-left: 5px;
-        color: #FFD700; /* Warna emas untuk angka skor */
+        margin-left: 3px; /* Jarak disesuaikan */
+        color: #FFD700;
+    }
+
+    /* Media Queries untuk Responsivitas */
+    @media (max-width: 768px) { /* Untuk tablet dan layar yang lebih kecil */
+        #startScreen, #gameOverScreen {
+            padding: 15px;
+            font-size: 16px;
+        }
+        #startScreen h1, #gameOverScreen h2 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+        .character-options {
+            flex-direction: column; /* Tumpuk kartu di layar kecil */
+            gap: 15px;
+        }
+        .character-card {
+            flex-basis: 80%; /* Lebar kartu lebih besar di layar kecil */
+            max-width: 250px; /* Batasi lebar maksimum */
+            padding: 15px;
+        }
+        .character-image {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 10px;
+        }
+        .character-button, .game-over-button {
+            padding: 10px 15px;
+            font-size: 0.7em;
+        }
+        #finalScore {
+            font-size: 1em;
+            margin-bottom: 15px;
+        }
+        #scoreDisplay {
+            font-size: 0.7em;
+            padding: 6px 10px;
+            gap: 5px;
+        }
+        #scoreDisplay img {
+            width: 16px;
+            height: 16px;
+        }
+        #coinMilestonePopup {
+            width: 150px; /* Ukuran popup lebih kecil di HP */
+        }
+    }
+
+    @media (max-width: 480px) { /* Untuk ponsel */
+        #startScreen, #gameOverScreen {
+            padding: 10px;
+            font-size: 14px;
+        }
+        #startScreen h1, #gameOverScreen h2 {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+        .character-options {
+            gap: 10px;
+        }
+        .character-card {
+            padding: 10px;
+            max-width: 200px;
+        }
+        .character-image {
+            width: 70px;
+            height: 70px;
+            margin-bottom: 8px;
+        }
+        .character-button, .game-over-button {
+            padding: 8px 12px;
+            font-size: 0.6em;
+        }
+        #finalScore {
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+        #scoreDisplay {
+            font-size: 0.6em;
+            padding: 5px 8px;
+            gap: 3px;
+        }
+        #scoreDisplay img {
+            width: 14px;
+            height: 14px;
+        }
+        #coinMilestonePopup {
+            width: 120px;
+        }
     }
   </style>
 </head>
@@ -443,6 +520,30 @@
         player.speed = 0;
       }
     });
+
+    // Tambahkan kontrol sentuh untuk perangkat seluler
+    let touchStartX = 0;
+    canvas.addEventListener('touchstart', (e) => {
+        touchStartX = e.touches[0].clientX;
+    });
+
+    canvas.addEventListener('touchmove', (e) => {
+        const touchCurrentX = e.touches[0].clientX;
+        const diffX = touchCurrentX - touchStartX;
+
+        if (Math.abs(diffX) > 10) { // Ambang batas untuk mendeteksi gesekan
+            if (diffX > 0) {
+                player.speed = player.maxSpeed; // Geser ke kanan
+            } else {
+                player.speed = -player.maxSpeed; // Geser ke kiri
+            }
+        }
+    });
+
+    canvas.addEventListener('touchend', () => {
+        player.speed = 0; // Berhenti bergerak saat sentuhan dilepas
+    });
+
 
     function startGame() {
       startScreen.style.display = "none";
