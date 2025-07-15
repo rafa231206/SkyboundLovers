@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Skybound Lovers</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: linear-gradient(to top, #a0d8f1, #e0f7ff);
+      font-family: 'Press Start 2P', cursive; /* Font baru */
+      color: #333;
+    }
+    canvas {
+      display: block;
+      margin: 0 auto;
+      background-color: #b3e5fc;
+      border-radius: 15px; /* Sudut membulat untuk kanvas */
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3); /* Bayangan untuk kanvas */
+    }
+    #startScreen {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      color: #fff;
+      font-size: 20px; /* Ukuran font disesuaikan */
+      display: none;
+      background: rgba(0,0,0,0.8); /* Lebih gelap */
+      padding: 40px; /* Padding lebih besar */
+      border-radius: 25px; /* Lebih membulat */
+      box-shadow: 0 0 30px rgba(0,0,0,0.7); /* Bayangan lebih kuat */
+      border: 3px solid #2196F3; /* Border biru */
+    }
+    #startScreen h1 {
+        font-size: 2.5em; /* Ukuran judul lebih besar */
+        color: #FFD700; /* Warna emas untuk judul */
+        text-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+        margin-bottom: 30px;
+    }
+    .character-options {
+      display: flex;
+      gap: 40px; /* Jarak antar kartu lebih besar */
+      margin-top: 30px;
+      justify-content: center;
+    }
+    .character-card {
+      padding: 25px; /* Padding lebih besar */
+      border-radius: 20px; /* Lebih membulat */
+      background: rgba(255,255,255,0.15); /* Sedikit lebih transparan */
+      transition: all 0.4s ease; /* Transisi lebih halus */
+      cursor: pointer;
+      border: 2px solid transparent; /* Border awal transparan */
+    }
+    .character-card:hover {
+      transform: translateY(-10px) scale(1.08); /* Efek hover lebih dramatis */
+      background: rgba(255,255,255,0.3);
+      border: 2px solid #FFD700; /* Border emas saat hover */
+      box-shadow: 0 15px 25px rgba(0,0,0,0.4); /* Bayangan saat hover */
+    }
+    .character-image {
+      width: 160px; /* Ukuran gambar lebih besar */
+      height: 160px; /* Ukuran gambar lebih besar */
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid #fff; /* Border gambar lebih tebal */
+      margin-bottom: 20px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    .character-button {
+      padding: 12px 25px; /* Padding lebih besar */
+      border: none;
+      border-radius: 50px;
+      background: linear-gradient(45deg, #2196F3, #00BCD4); /* Gradient biru */
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Press Start 2P', cursive;
+      font-size: 0.9em;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .character-button:hover {
+      background: linear-gradient(45deg, #1976D2, #0097A7); /* Gradient lebih gelap saat hover */
+      transform: translateY(-3px); /* Efek naik lebih tinggi */
+      box-shadow: 0 8px 15px rgba(0,0,0,0.3); /* Bayangan lebih kuat */
+    }
+    
+    #gameOverScreen {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      color: #fff;
+      font-size: 20px; /* Ukuran font disesuaikan */
+      display: none;
+      background: rgba(0,0,0,0.9); /* Lebih gelap */
+      padding: 40px;
+      border-radius: 25px;
+      box-shadow: 0 0 40px rgba(0,0,0,0.8); /* Bayangan lebih kuat */
+      width: 320px; /* Lebar disesuaikan */
+      border: 3px solid #ff4081; /* Border pink */
+    }
+    #gameOverScreen h2 {
+        font-size: 2.2em;
+        color: #FF4081; /* Warna pink untuk judul */
+        text-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+        margin-bottom: 20px;
+    }
+    #finalScore {
+        font-size: 1.5em;
+        margin-bottom: 25px;
+        color: #FFD700; /* Warna emas untuk skor akhir */
+    }
+    .game-over-button {
+      padding: 15px 30px; /* Padding lebih besar */
+      margin-top: 25px;
+      border: none;
+      border-radius: 50px;
+      background: linear-gradient(45deg, #ff4081, #e91e63); /* Gradient pink */
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 1.1em;
+      font-family: 'Press Start 2P', cursive;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .game-over-button:hover {
+      background: linear-gradient(45deg, #e91e63, #c2185b); /* Gradient lebih gelap saat hover */
+      transform: translateY(-4px); /* Efek naik lebih tinggi */
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4); /* Bayangan lebih kuat */
+    }
+
+    /* Gaya untuk popup koin */
+    #coinMilestonePopup {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 250px; /* Ukuran gambar lebih besar */
+      height: auto;
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
+      z-index: 100;
+      border-radius: 15px; /* Sudut membulat */
+      box-shadow: 0 0 30px rgba(255,255,0,0.9); /* Efek cahaya lebih kuat */
+      border: 3px solid #FFD700; /* Border emas */
+    }
+
+    /* Gaya untuk tampilan skor dan koin */
+    #scoreDisplay {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: rgba(0, 0, 0, 0.6); /* Latar belakang gelap transparan */
+        color: #fff;
+        padding: 10px 15px;
+        border-radius: 10px;
+        font-family: 'Press Start 2P', cursive;
+        font-size: 1em;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        border: 2px solid #FFD700; /* Border emas */
+    }
+    #scoreDisplay img {
+        width: 24px; /* Ukuran ikon koin */
+        height: 24px;
+        vertical-align: middle;
+    }
+    #scoreDisplay span {
+        margin-left: 5px;
+        color: #FFD700; /* Warna emas untuk angka skor */
+    }
+  </style>
+</head>
+<body>
+  <div id="startScreen">
+    <h1>Skybound Lovers</h1>
+    <div class="character-options">
+      <div class="character-card" onclick="selectCharacter(1)">
+        <img src="laki-laki copy.png" alt="Karakter Laki-laki" class="character-image">
+        <button class="character-button">Laki-laki</button>
+      </div>
+      <div class="character-card" onclick="selectCharacter(2)">
+        <img src="perempuan copyy.png" alt="Karakter Perempuan" class="character-image">
+        <button class="character-button">Perempuan</button>
+      </div>
+    </div>
+  </div>
+  <canvas id="gameCanvas" width="400" height="600"></canvas>
+
+  <!-- Tampilan Skor dan Koin -->
+  <div id="scoreDisplay">
+    Skor: <span id="currentScore">0</span>
+    <img src="coin.png" alt="Koin" style="width: 20px; height: 20px;"> Koin: <span id="currentCoinScore">0</span>
+  </div>
+
+  <div id="gameOverScreen">
+    <h2>Game Over!</h2>
+    <p id="finalScore">Skor Akhir: 0</p>
+    <button class="game-over-button" onclick="restartGame()">Main Lagi!</button>
+  </div>
+
+  <!-- Elemen untuk popup koin -->
+  <img id="coinMilestonePopup" src="popup.jpg" alt="Milestone Koin">
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const startScreen = document.getElementById("startScreen");
+    const coinMilestonePopup = document.getElementById("coinMilestonePopup");
+    const currentScoreDisplay = document.getElementById("currentScore"); // Elemen untuk skor
+    const currentCoinScoreDisplay = document.getElementById("currentCoinScore"); // Elemen untuk koin
+
+    let selectedCharacter = 1;
+    const player = {
+      x: 180,
+      y: 500,
+      width: 50,
+      height: 50,
+      dy: 0,
+      jumpPower: -12,
+      gravity: 0.5,
+      speed: 0,
+      maxSpeed: 5,
+      image: new Image()
+    };
+
+    const platforms = [];
+    const platformCount = 10;
+    let score = 0;
+    let coinScore = 0;
+    let gameStarted = false;
+    let lastMilestone = 0;
+
+    const coins = [];
+    const coinImage = new Image();
+    coinImage.src = "coin.png";
+
+    function createPlatforms() {
+      platforms.length = 0;
+      platforms.push({
+        x: 0,
+        y: 570,
+        width: 400,
+        height: 10,
+        color: "#ffffff"
+      });
+
+      for (let i = 0; i < platformCount; i++) {
+        let p = {
+          x: Math.random() * 340,
+          y: 600 - (i + 1) * 60,
+          width: 60,
+          height: 10,
+          color: "#ffffff"
+        };
+        platforms.push(p);
+      }
+    }
+
+    function createCoins() {
+      coins.length = 0;
+      platforms.forEach(p => {
+        // Pastikan koin tidak muncul di platform dasar (y=570)
+        if (p.y < 570) {
+          // Hanya buat koin jika platform bukan platform awal yang besar
+          if (p.width < 400) {
+            // Koin muncul di tengah platform, sedikit di atasnya
+            coins.push({
+              x: p.x + p.width / 2 - 15, // Tengah platform - setengah lebar koin
+              y: p.y - 30, // Sedikit di atas platform
+              width: 30,
+              height: 30,
+              taken: false
+            });
+          }
+        }
+      });
+    }
+
+    function drawPlayer() {
+      ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+      ctx.shadowBlur = 10;
+      ctx.drawImage(player.image, player.x, player.y, player.width, player.height);
+      ctx.shadowColor = "transparent";
+    }
+
+    function drawPlatforms() {
+      platforms.forEach(p => {
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, p.width, p.height);
+      });
+    }
+
+    function drawCoins() {
+      coins.forEach(coin => {
+        if (!coin.taken) {
+          ctx.drawImage(coinImage, coin.x, coin.y, coin.width, coin.height);
+        }
+      });
+    }
+
+    function movePlatforms(dy) {
+      platforms.forEach(p => {
+        p.y += dy;
+        if (p.y > 600) {
+          p.y = 0; // Platform didaur ulang ke atas
+          p.x = Math.random() * 340; // Posisi X acak untuk platform baru
+          score++;
+
+          // Saat platform baru dibuat, buat juga koin di atasnya
+          // Pastikan koin tidak muncul di platform dasar yang lebar
+          if (p.width < 400) {
+            if (Math.random() < 0.7) { // Peluang 70% koin muncul di platform baru
+              coins.push({
+                x: p.x + p.width / 2 - 15,
+                y: p.y - 30, // Di atas platform baru
+                width: 30,
+                height: 30,
+                taken: false
+              });
+            }
+          }
+        }
+      });
+
+      // Filter koin yang sudah keluar layar
+      for (let i = coins.length - 1; i >= 0; i--) {
+        coins[i].y += dy;
+        if (coins[i].y > 600) {
+          coins.splice(i, 1); // Hapus koin jika sudah keluar layar
+        }
+      }
+    }
+
+    function checkPlatformCollision() {
+      platforms.forEach(p => {
+        if (
+          player.dy > 0 &&
+          player.x + player.width > p.x &&
+          player.x < p.x + p.width &&
+          player.y + player.height > p.y &&
+          player.y + player.height < p.y + p.height + player.dy
+        ) {
+          player.dy = player.jumpPower;
+        }
+      });
+    }
+
+    function checkCoinCollision() {
+      coins.forEach(coin => {
+        if (!coin.taken) {
+          if (
+            player.x < coin.x + coin.width &&
+            player.x + player.width > coin.x &&
+            player.y < coin.y + coin.height &&
+            player.y + player.height > coin.y
+          ) {
+            coin.taken = true;
+            coinScore++;
+          }
+        }
+      });
+    }
+
+    function update() {
+      if (!gameStarted) return;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      player.y += player.dy;
+      player.dy += player.gravity;
+
+      player.x += player.speed;
+
+      if (player.x < 0) player.x = 0;
+      if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
+
+      if (player.y < 300) {
+        movePlatforms(3);
+        player.y = 300;
+      }
+
+      if (player.y > 600) {
+        gameStarted = false;
+        document.getElementById('finalScore').textContent = 'Skor Akhir: ' + score;
+        document.getElementById('gameOverScreen').style.display = 'block';
+      }
+
+      checkPlatformCollision();
+      checkCoinCollision();
+
+      const currentMilestone = Math.floor(coinScore / 10) * 10;
+      if (currentMilestone > 0 && currentMilestone > lastMilestone) {
+        lastMilestone = currentMilestone;
+        
+        coinMilestonePopup.style.display = 'block';
+        setTimeout(() => {
+          coinMilestonePopup.style.opacity = 1;
+        }, 50);
+
+        setTimeout(() => {
+          coinMilestonePopup.style.opacity = 0;
+          setTimeout(() => {
+            coinMilestonePopup.style.display = 'none';
+          }, 500);
+        }, 2000);
+      }
+
+      drawPlayer();
+      drawPlatforms();
+      drawCoins();
+      updateScoreDisplay(); // Panggil fungsi untuk memperbarui tampilan skor
+      requestAnimationFrame(update);
+    }
+
+    // Fungsi untuk memperbarui tampilan skor di DOM
+    function updateScoreDisplay() {
+      currentScoreDisplay.textContent = score;
+      currentCoinScoreDisplay.textContent = coinScore;
+    }
+
+    document.addEventListener("keydown", e => {
+      if (e.key === "ArrowLeft") {
+        player.speed = -player.maxSpeed;
+      } else if (e.key === "ArrowRight") {
+        player.speed = player.maxSpeed;
+      }
+    });
+
+    document.addEventListener("keyup", e => {
+      if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+        player.speed = 0;
+      }
+    });
+
+    function startGame() {
+      startScreen.style.display = "none";
+      // Tampilkan scoreDisplay saat game dimulai
+      document.getElementById('scoreDisplay').style.display = 'flex'; 
+      setTimeout(() => {
+        gameStarted = true;
+        update();
+      }, 2000);
+    }
+
+    function selectCharacter(character) {
+      selectedCharacter = character;
+      player.image.src = character === 1 ? "ChatGPT Image 15 Jul 2025 15.43.23.png" : "ChatGPT_Image_15_Jul_2025_15.20.27-removebg-preview.png"; // Pastikan path gambar benar
+      startGame();
+    }
+    
+    function restartGame() {
+      document.getElementById('gameOverScreen').style.display = 'none';
+      score = 0;
+      coinScore = 0;
+      lastMilestone = 0;
+      platforms.length = 0;
+      coins.length = 0;
+      createPlatforms();
+      createCoins();
+      player.y = 500;
+      player.dy = 0;
+      startGame();
+    }
+
+    // Sembunyikan scoreDisplay di awal
+    document.getElementById('scoreDisplay').style.display = 'none'; 
+    startScreen.style.display = "block";
+    createPlatforms();
+    createCoins();
+  </script>
+</body>
+</html>
