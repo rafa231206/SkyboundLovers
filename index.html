@@ -259,6 +259,8 @@
         }
     }
   </style>
+  <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2196F3">
 </head>
 <body>
   <div id="startScreen">
@@ -580,6 +582,12 @@
     startScreen.style.display = "block";
     createPlatforms();
     createCoins();
+
+    if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js')
+      .then(() => console.log("Service Worker terdaftar"))
+      .catch(err => console.error("Service Worker gagal:", err));
+  }
   </script>
 </body>
 </html>
