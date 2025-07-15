@@ -2,30 +2,91 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
   <title>Skybound Lovers</title>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <style>
+    /* Gaya Umum */
     body {
       margin: 0;
+      padding: 0;
       overflow: hidden;
+      /* Tema default */
       background: linear-gradient(to top, #a0d8f1, #e0f7ff);
       font-family: 'Press Start 2P', cursive;
       color: #333;
-      display: flex; /* Menggunakan flexbox untuk centering */
+      display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 100vh; /* Pastikan body mengisi seluruh tinggi viewport */
+      min-height: 100vh;
+      height: 100%;
+      transition: all 0.5s ease-in-out;
+      -webkit-tap-highlight-color: transparent;
     }
+
+    .no-transition {
+      transition: none !important;
+    }
+
+
     canvas {
       display: block;
       margin: 0 auto;
-      background-color: #b3e5fc;
+      background-color: #b3e5fc; /* Default canvas background */
       border-radius: 15px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-      max-width: 100%; /* Pastikan kanvas tidak melebihi lebar viewport */
-      height: auto; /* Pertahankan rasio aspek */
+      width: 100%;
+      max-width: 400px;
+      height: 600px;
+      transition: background-color 0.5s ease-in-out;
+      touch-action: none;
     }
+    /* Paralax background layers */
+    canvas::before, canvas::after {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      transition: all 1.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+      z-index: -1;
+    }
+
+    /* Tema 1: Langit dengan Bangunan */
+    canvas.theme-buildings {
+      background: linear-gradient(to top, #87CEEB, #ADD8E6);
+      box-shadow: inset 0 0 100px rgba(135, 206, 235, 0.6);
+    }
+    canvas.theme-buildings::before {
+      background: url('https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/504ea317-e0a0-4a72-a92a-ccdcfcbc6893.png') center/cover;
+      opacity: 0.6;
+    }
+
+    /* Tema 2: Langit dengan Burung */
+    canvas.theme-birds {
+      background: linear-gradient(to top, #4B0082, #9400D3);
+      box-shadow: inset 0 0 100px rgba(75, 0, 130, 0.6);
+    }
+    canvas.theme-birds::after {
+      background: url('https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/ed8cb5e3-2b89-47bb-9c86-80d2a449f7a3.png') center/cover;
+      animation: float 15s linear infinite;
+    }
+
+    /* Tema 3: Angkasa */
+    canvas.theme-space {
+      background: linear-gradient(to top, #000000, #000033);
+      box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.8);
+    }
+    canvas.theme-space::before {
+      background: url('https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/8f111458-08a8-45c6-afbb-5de16e209a41.png') center/cover;
+      animation: twinkle 5s ease-in-out infinite;
+    }
+    
+    /* Add new animations */
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 0.8; }
+    }
+
     #startScreen, #gameOverScreen {
       position: absolute;
       top: 50%;
@@ -34,62 +95,105 @@
       text-align: center;
       color: #fff;
       background: rgba(0,0,0,0.8);
-      padding: 20px; /* Padding disesuaikan */
+      padding: 20px 20px 60px;
       border-radius: 25px;
       box-shadow: 0 0 30px rgba(0,0,0,0.7);
       border: 3px solid #2196F3;
-      max-width: 90%; /* Batasi lebar maksimum */
-      box-sizing: border-box; /* Pastikan padding termasuk dalam lebar */
+      max-width: 90%;
+      box-sizing: border-box;
       display: none;
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+    }
+    #startScreen.show, #gameOverScreen.show {
+        opacity: 1;
     }
     #gameOverScreen {
         border: 3px solid #ff4081;
     }
     #startScreen h1, #gameOverScreen h2 {
-        font-size: 1.8em; /* Ukuran judul disesuaikan */
+        font-size: 1.8em;
         color: #FFD700;
         text-shadow: 2px 2px 5px rgba(0,0,0,0.5);
         margin-bottom: 20px;
     }
     #gameOverScreen h2 {
         color: #FF4081;
+        position: relative;
+        margin-top: 10px;
+    }
+    .game-over-deco {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.6));
+      animation: float 3s ease-in-out infinite;
+    }
+    .game-over-deco.left {
+      left: 20px;
+      top: 20px;
+    }
+    .game-over-deco.right {
+      right: 20px;
+      top: 20px;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
     }
     .character-options {
       display: flex;
-      flex-direction: row; /* Default row untuk desktop */
-      gap: 20px; /* Jarak antar kartu disesuaikan */
+      flex-direction: row;
+      gap: 20px;
       margin-top: 20px;
       justify-content: center;
-      flex-wrap: wrap; /* Izinkan wrap di layar kecil */
+      flex-wrap: wrap;
     }
     .character-card {
-      padding: 15px; /* Padding disesuaikan */
+      padding: 15px;
       border-radius: 20px;
       background: rgba(255,255,255,0.15);
       transition: all 0.4s ease;
       cursor: pointer;
       border: 2px solid transparent;
-      flex-basis: 45%; /* Lebar kartu di flexbox */
-      max-width: 180px; /* Batasi lebar maksimum kartu */
+      flex: 1 1 45%;
+      min-width: 120px;
+      max-width: 180px;
       box-sizing: border-box;
+      margin: 5px;
     }
     .character-card:hover {
-      transform: translateY(-5px) scale(1.05); /* Efek hover disesuaikan */
+      transform: translateY(-5px) scale(1.05);
       background: rgba(255,255,255,0.3);
       border: 2px solid #FFD700;
       box-shadow: 0 10px 20px rgba(0,0,0,0.3);
     }
     .character-image {
-      width: 100px; /* Ukuran gambar disesuaikan */
-      height: 100px; /* Ukuran gambar disesuaikan */
+      width: 100px;
+      height: 100px;
       border-radius: 50%;
       object-fit: cover;
       border: 4px solid #fff;
       margin-bottom: 15px;
       box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     }
-    .character-button, .game-over-button {
-      padding: 10px 20px; /* Padding disesuaikan */
+    .main-button {
+      padding: 15px 30px;
+      background: linear-gradient(135deg, #FF416C, #FF4B2B);
+      font-size: 1em;
+      margin: 20px auto;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      border: 2px solid #FFD700;
+    }
+
+    .back-button {
+      padding: 10px 20px;
+      background: rgba(255,255,255,0.2);
+      margin-top: 20px;
+    }
+
+    .character-button, .game-over-button, .main-button, .back-button {
+      padding: 10px 20px;
       border: none;
       border-radius: 50px;
       background: linear-gradient(45deg, #2196F3, #00BCD4);
@@ -98,27 +202,70 @@
       cursor: pointer;
       transition: all 0.3s ease;
       font-family: 'Press Start 2P', cursive;
-      font-size: 0.8em; /* Ukuran font disesuaikan */
+      font-size: 0.8em;
       text-transform: uppercase;
       letter-spacing: 1px;
-      width: 100%; /* Tombol mengisi lebar kartu */
+      width: 100%;
       box-sizing: border-box;
     }
-    .character-button:hover {
+    .character-button:hover, .main-button:hover, .back-button:hover {
       background: linear-gradient(45deg, #1976D2, #0097A7);
       transform: translateY(-2px);
       box-shadow: 0 5px 10px rgba(0,0,0,0.2);
     }
+
+    .main-button {
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
     
     #finalScore {
-        font-size: 1.2em; /* Ukuran font disesuaikan */
+        font-size: 1.2em;
         margin-bottom: 20px;
         color: #FFD700;
+    }
+    /* Gaya untuk High Score Display */
+    #highScoreDisplay {
+        font-size: 1.4em;
+        margin: 15px 0;
+        padding: 15px;
+        color: #FFD700;
+        background: rgba(0,0,0,0.7);
+        border-radius: 10px;
+        border: 2px solid gold;
+        box-shadow: 0 0 15px rgba(255,215,0,0.5);
+        text-shadow: 0 0 5px #ff0;
+        animation: pulse 1.5s infinite;
+        transform: scale(1.1);
+    }
+
+    @keyframes glow {
+        0% { text-shadow: 0 0 5px #ff0; }
+        50% { text-shadow: 0 0 15px #ff0, 0 0 10px #fa0; }
+        100% { text-shadow: 0 0 5px #ff0; }
+    }
+
+    .new-highscore {
+        animation: glow 1s infinite, pulse 0.5s infinite !important;
+        color: #ffcc00 !important;
+        background: rgba(255,0,0,0.2) !important;
+    }
+
+    .button-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
     }
     .game-over-button {
       background: linear-gradient(45deg, #ff4081, #e91e63);
       font-size: 1em;
-      margin-top: 20px;
+      margin-top: 0;
     }
     .game-over-button:hover {
       background: linear-gradient(45deg, #e91e63, #c2185b);
@@ -132,7 +279,7 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 200px; /* Ukuran gambar disesuaikan */
+      width: 200px;
       height: auto;
       opacity: 0;
       transition: opacity 0.5s ease-in-out;
@@ -140,40 +287,68 @@
       border-radius: 15px;
       box-shadow: 0 0 30px rgba(255,255,0,0.9);
       border: 3px solid #FFD700;
-      max-width: 80%; /* Batasi lebar maksimum */
+      max-width: 80%;
     }
 
     #scoreDisplay {
         position: absolute;
-        top: 10px; /* Posisi disesuaikan */
-        right: 10px; /* Posisi disesuaikan */
+        top: 10px;
+        right: 10px;
         background: rgba(0, 0, 0, 0.6);
         color: #fff;
-        padding: 8px 12px; /* Padding disesuaikan */
+        padding: 8px 12px;
         border-radius: 10px;
         font-family: 'Press Start 2P', cursive;
-        font-size: 0.8em; /* Ukuran font disesuaikan */
+        font-size: 0.8em;
         display: flex;
         align-items: center;
-        gap: 8px; /* Jarak antar elemen disesuaikan */
+        gap: 8px;
         box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         border: 2px solid #FFD700;
-        z-index: 50; /* Pastikan di atas kanvas */
+        z-index: 50;
     }
     #scoreDisplay img {
-        width: 20px; /* Ukuran ikon koin disesuaikan */
+        width: 20px;
         height: 20px;
         vertical-align: middle;
     }
     #scoreDisplay span {
-        margin-left: 3px; /* Jarak disesuaikan */
+        margin-left: 3px;
         color: #FFD700;
     }
 
+    /* Creator text styling */
+    #creatorText {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+      max-width: 500px;
+      text-align: center;
+      font-size: 0.7em;
+      padding: 10px;
+      background: rgba(0,0,0,0.85);
+      color: #FFD700;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+      border: 2px solid rgba(255,215,0,0.3);
+      border-radius: 12px;
+      z-index: 100;
+      opacity: 0.8;
+    }
+
+    /* Gaya untuk Logo Game */
+    #gameLogo {
+      width: 150px;
+      height: auto;
+      margin-bottom: 15px;
+      filter: drop-shadow(0 0 10px rgba(255,215,0,0.8));
+    }
+
     /* Media Queries untuk Responsivitas */
-    @media (max-width: 768px) { /* Untuk tablet dan layar yang lebih kecil */
+    @media (max-width: 768px) {
         #startScreen, #gameOverScreen {
-            padding: 15px;
+            padding: 15px 15px 50px;
             font-size: 16px;
         }
         #startScreen h1, #gameOverScreen h2 {
@@ -181,12 +356,12 @@
             margin-bottom: 15px;
         }
         .character-options {
-            flex-direction: column; /* Tumpuk kartu di layar kecil */
+            flex-direction: column;
             gap: 15px;
         }
         .character-card {
-            flex-basis: 80%; /* Lebar kartu lebih besar di layar kecil */
-            max-width: 250px; /* Batasi lebar maksimum */
+            flex-basis: 80%;
+            max-width: 250px;
             padding: 15px;
         }
         .character-image {
@@ -202,6 +377,10 @@
             font-size: 1em;
             margin-bottom: 15px;
         }
+        #highScoreDisplay {
+            font-size: 0.9em;
+            margin-top: 8px;
+        }
         #scoreDisplay {
             font-size: 0.7em;
             padding: 6px 10px;
@@ -212,13 +391,21 @@
             height: 16px;
         }
         #coinMilestonePopup {
-            width: 150px; /* Ukuran popup lebih kecil di HP */
+            width: 150px;
+        }
+        #creatorText {
+            font-size: 0.6em;
+            padding: 8px;
+            bottom: 10px;
+        }
+        #gameLogo {
+            width: 120px;
         }
     }
 
-    @media (max-width: 480px) { /* Untuk ponsel */
+    @media (max-width: 480px) {
         #startScreen, #gameOverScreen {
-            padding: 10px;
+            padding: 10px 10px 40px;
             font-size: 14px;
         }
         #startScreen h1, #gameOverScreen h2 {
@@ -245,6 +432,10 @@
             font-size: 0.9em;
             margin-bottom: 10px;
         }
+        #highScoreDisplay {
+            font-size: 0.8em;
+            margin-top: 6px;
+        }
         #scoreDisplay {
             font-size: 0.6em;
             padding: 5px 8px;
@@ -257,6 +448,14 @@
         #coinMilestonePopup {
             width: 120px;
         }
+        #creatorText {
+            font-size: 0.55em;
+            padding: 6px;
+            bottom: 8px;
+        }
+        #gameLogo {
+            width: 100px;
+        }
     }
   </style>
   <link rel="manifest" href="manifest.json">
@@ -264,30 +463,54 @@
 </head>
 <body>
   <div id="startScreen">
+    <img id="gameLogo" src="popup.jpg" alt="Skybound Lovers Logo">
     <h1>Skybound Lovers</h1>
-    <div class="character-options">
-      <div class="character-card" onclick="selectCharacter(1)">
-        <img src="laki-laki copy.png" alt="Karakter Laki-laki" class="character-image">
-        <button class="character-button">Laki-laki</button>
-      </div>
-      <div class="character-card" onclick="selectCharacter(2)">
-        <img src="perempuan copyy.png" alt="Karakter Perempuan" class="character-image">
-        <button class="character-button">Perempuan</button>
+    <div id="mainMenu">
+      <button class="main-button" onclick="showCharacterSelect()">Mulai Game</button>
+      <div id="characterPreview" style="margin: 20px auto; display: none;">
+        <h3>Pilihan Karakter:</h3>
+        <img id="selectedCharacterImg" src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/e99a780f-00a0-4b1a-ac42-516cc062ac52.png" alt="Karakter Terpilih" 
+             style="width: 100px; height:100px; border-radius:50%; border:3px solid gold">
       </div>
     </div>
+    
+    <div id="characterSelect" style="display: none;">
+      <h2>Pilih Karakter</h2>
+      <div class="character-options">
+        <div class="character-card" onclick="previewCharacter(1)">
+          <img src="laki-laki copy.png" alt="Karakter Laki-laki" class="character-image">
+          <p>Laki-laki</p>
+        </div>
+        <div class="character-card" onclick="previewCharacter(2)">
+          <img src="perempuan copyy.png" alt="Karakter Perempuan" class="character-image">
+          <p>Perempuan</p>
+        </div>
+      </div>
+      <button class="back-button" onclick="backToMain()">⬅ Kembali</button>
+    </div>
   </div>
+  <p id="creatorText">
+    CREATED BY RAFA STUDIOS 
+    <br>© 2025 - ALL RIGHTS RESERVED
+  </p>
   <canvas id="gameCanvas" width="400" height="600"></canvas>
 
   <!-- Tampilan Skor dan Koin -->
   <div id="scoreDisplay">
     Skor: <span id="currentScore">0</span>
-    <img src="coin.png" alt="Koin" style="width: 20px; height: 20px;"> Koin: <span id="currentCoinScore">0</span>
+    <img src="coin.png" alt="Koin" style="width: 20px; height: 20px;"> Love: <span id="currentCoinScore">0</span>
   </div>
 
   <div id="gameOverScreen">
+    <img class="game-over-deco left" src="ana.jpg" alt="Game Over Decoration">
+    <img class="game-over-deco right" src="farel.jpg" alt="Game Over Decoration">
     <h2>Game Over!</h2>
     <p id="finalScore">Skor Akhir: 0</p>
-    <button class="game-over-button" onclick="restartGame()">Main Lagi!</button>
+    <p id="highScoreDisplay"></p>
+    <div class="button-group">
+      <button class="game-over-button" onclick="restartGame()">Main Lagi!</button>
+      <button class="back-button" onclick="backToStartMenu()">Kembali ke Menu</button>
+    </div>
   </div>
 
   <!-- Elemen untuk popup koin -->
@@ -297,9 +520,11 @@
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
     const startScreen = document.getElementById("startScreen");
+    const gameOverScreen = document.getElementById("gameOverScreen");
     const coinMilestonePopup = document.getElementById("coinMilestonePopup");
-    const currentScoreDisplay = document.getElementById("currentScore"); // Elemen untuk skor
-    const currentCoinScoreDisplay = document.getElementById("currentCoinScore"); // Elemen untuk koin
+    const currentScoreDisplay = document.getElementById("currentScore");
+    const currentCoinScoreDisplay = document.getElementById("currentCoinScore");
+    const highScoreDisplay = document.getElementById('highScoreDisplay');
 
     let selectedCharacter = 1;
     const player = {
@@ -321,6 +546,7 @@
     let coinScore = 0;
     let gameStarted = false;
     let lastMilestone = 0;
+    let highScore = localStorage.getItem('highScore') ? parseInt(localStorage.getItem('highScore')) : 0;
 
     const coins = [];
     const coinImage = new Image();
@@ -351,14 +577,11 @@
     function createCoins() {
       coins.length = 0;
       platforms.forEach(p => {
-        // Pastikan koin tidak muncul di platform dasar (y=570)
         if (p.y < 570) {
-          // Hanya buat koin jika platform bukan platform awal yang besar
           if (p.width < 400) {
-            // Koin muncul di tengah platform, sedikit di atasnya
             coins.push({
-              x: p.x + p.width / 2 - 15, // Tengah platform - setengah lebar koin
-              y: p.y - 30, // Sedikit di atas platform
+              x: p.x + p.width / 2 - 15,
+              y: p.y - 30,
               width: 30,
               height: 30,
               taken: false
@@ -394,17 +617,15 @@
       platforms.forEach(p => {
         p.y += dy;
         if (p.y > 600) {
-          p.y = 0; // Platform didaur ulang ke atas
-          p.x = Math.random() * 340; // Posisi X acak untuk platform baru
+          p.y = 0;
+          p.x = Math.random() * 340;
           score++;
 
-          // Saat platform baru dibuat, buat juga koin di atasnya
-          // Pastikan koin tidak muncul di platform dasar yang lebar
           if (p.width < 400) {
-            if (Math.random() < 0.7) { // Peluang 70% koin muncul di platform baru
+            if (Math.random() < 0.7) {
               coins.push({
                 x: p.x + p.width / 2 - 15,
-                y: p.y - 30, // Di atas platform baru
+                y: p.y - 30,
                 width: 30,
                 height: 30,
                 taken: false
@@ -414,11 +635,10 @@
         }
       });
 
-      // Filter koin yang sudah keluar layar
       for (let i = coins.length - 1; i >= 0; i--) {
         coins[i].y += dy;
         if (coins[i].y > 600) {
-          coins.splice(i, 1); // Hapus koin jika sudah keluar layar
+          coins.splice(i, 1);
         }
       }
     }
@@ -473,7 +693,23 @@
       if (player.y > 600) {
         gameStarted = false;
         document.getElementById('finalScore').textContent = 'Skor Akhir: ' + score;
-        document.getElementById('gameOverScreen').style.display = 'block';
+
+        if (score > highScore) {
+          highScore = score;
+          localStorage.setItem('highScore', highScore);
+          highScoreDisplay.textContent = '🎉 HIGH SCORE BARU! ' + highScore + ' 🎉';
+          highScoreDisplay.classList.add('new-highscore');
+        } else {
+          highScoreDisplay.textContent = '⭐ SKOR TERTINGGI: ' + highScore + ' ⭐';
+          highScoreDisplay.classList.remove('new-highscore');
+        }
+
+        document.getElementById('scoreDisplay').style.display = 'none';
+
+        gameOverScreen.style.display = 'block';
+        setTimeout(() => {
+            gameOverScreen.classList.add('show');
+        }, 50);
       }
 
       checkPlatformCollision();
@@ -496,14 +732,47 @@
         }, 2000);
       }
 
+      // Theme switching with cycling through 3 themes every 50 points
+      const canvasElement = document.getElementById('gameCanvas');
+      let newThemeClass = 'theme-buildings'; // Default starting theme
+      
+      // Only cycle themes if score > 0
+      if (score > 0) {
+        const themeCycle = Math.floor((score-1) / 50) % 3; // 0-1-2 repeating
+        if (themeCycle === 1) {
+          newThemeClass = 'theme-birds';
+        } else if (themeCycle === 2) {
+          newThemeClass = 'theme-space';
+        }
+      }
+
+      // Only change theme if different and add transition effects
+      if (!canvasElement.classList.contains(newThemeClass)) {
+        canvasElement.classList.add('no-transition');
+        canvasElement.className = '';
+        
+        setTimeout(() => {
+          canvasElement.classList.remove('no-transition');
+          if (newThemeClass) {
+            canvasElement.classList.add(newThemeClass);
+            
+            // Additional visual feedback if theme changed
+            if (newThemeClass === 'theme-birds') {
+              showThemePopup("🦅 Birds Theme", "#9C27B0");
+            } else if (newThemeClass === 'theme-space') {
+              showThemePopup("🌟 Space Theme", "#6a0dad");
+            }
+          }
+        }, 10);
+      }
+
       drawPlayer();
       drawPlatforms();
       drawCoins();
-      updateScoreDisplay(); // Panggil fungsi untuk memperbarui tampilan skor
+      updateScoreDisplay();
       requestAnimationFrame(update);
     }
 
-    // Fungsi untuk memperbarui tampilan skor di DOM
     function updateScoreDisplay() {
       currentScoreDisplay.textContent = score;
       currentCoinScoreDisplay.textContent = coinScore;
@@ -523,7 +792,6 @@
       }
     });
 
-    // Tambahkan kontrol sentuh untuk perangkat seluler
     let touchStartX = 0;
     canvas.addEventListener('touchstart', (e) => {
         touchStartX = e.touches[0].clientX;
@@ -533,38 +801,97 @@
         const touchCurrentX = e.touches[0].clientX;
         const diffX = touchCurrentX - touchStartX;
 
-        if (Math.abs(diffX) > 10) { // Ambang batas untuk mendeteksi gesekan
+        if (Math.abs(diffX) > 10) {
             if (diffX > 0) {
-                player.speed = player.maxSpeed; // Geser ke kanan
+                player.speed = player.maxSpeed;
             } else {
-                player.speed = -player.maxSpeed; // Geser ke kiri
+                player.speed = -player.maxSpeed;
             }
         }
     });
 
     canvas.addEventListener('touchend', () => {
-        player.speed = 0; // Berhenti bergerak saat sentuhan dilepas
+        player.speed = 0;
     });
 
-
     function startGame() {
-      startScreen.style.display = "none";
-      // Tampilkan scoreDisplay saat game dimulai
+      startScreen.classList.remove('show');
+      setTimeout(() => {
+        startScreen.style.display = "none";
+      }, 500);
+
       document.getElementById('scoreDisplay').style.display = 'flex'; 
+      
       setTimeout(() => {
         gameStarted = true;
         update();
-      }, 2000);
+      }, 500);
     }
 
-    function selectCharacter(character) {
+    function showCharacterSelect() {
+      document.getElementById('mainMenu').style.display = 'none';
+      document.getElementById('characterSelect').style.display = 'block';
+    }
+
+    function backToMain() {
+      document.getElementById('characterSelect').style.display = 'none';
+      document.getElementById('mainMenu').style.display = 'block';
+    }
+
+    function previewCharacter(character) {
       selectedCharacter = character;
-      player.image.src = character === 1 ? "ChatGPT Image 15 Jul 2025 15.43.23.png" : "ChatGPT_Image_15_Jul_2025_15.20.27-removebg-preview.png"; // Pastikan path gambar benar
+      const charImage = character === 1 ? "ChatGPT Image 15 Jul 2025 15.43.23.png" : "ChatGPT_Image_15_Jul_2025_15.20.27-removebg-preview.png";
+      document.getElementById('selectedCharacterImg').src = charImage;
+      document.getElementById('characterPreview').style.display = 'block';
+      
+      player.image.src = charImage; 
+
       startGame();
     }
     
+    function showThemePopup(message, color) {
+      const popup = document.createElement('div');
+      popup.textContent = message;
+      popup.style.position = 'absolute';
+      popup.style.top = '50%';
+      popup.style.left = '50%';
+      popup.style.transform = 'translate(-50%, -50%)';
+      popup.style.padding = '15px 30px';
+      popup.style.background = color;
+      popup.style.color = 'white';
+      popup.style.borderRadius = '50px';
+      popup.style.fontFamily = "'Press Start 2P', cursive";
+      popup.style.fontSize = '0.8em';
+      popup.style.zIndex = '1000';
+      popup.style.boxShadow = '0 0 20px rgba(255,255,255,0.7)';
+      popup.style.animation = 'pulse 1s 2';
+      
+      document.body.appendChild(popup);
+      
+      setTimeout(() => {
+        popup.style.transition = 'all 0.5s ease-out';
+        popup.style.opacity = '0';
+        setTimeout(() => popup.remove(), 500);
+      }, 1500);
+    }
+
+    function backToStartMenu() {
+      gameOverScreen.classList.remove('show');
+      setTimeout(() => {
+        gameOverScreen.style.display = 'none';
+        startScreen.style.display = 'block';
+        setTimeout(() => {
+          startScreen.classList.add('show');
+        }, 50);
+      }, 500);
+    }
+
     function restartGame() {
-      document.getElementById('gameOverScreen').style.display = 'none';
+      gameOverScreen.classList.remove('show');
+      setTimeout(() => {
+        gameOverScreen.style.display = 'none';
+      }, 500);
+
       score = 0;
       coinScore = 0;
       lastMilestone = 0;
@@ -574,14 +901,36 @@
       createCoins();
       player.y = 500;
       player.dy = 0;
-      startGame();
+      highScoreDisplay.textContent = '';
+
+      // Reset tema canvas ke building theme saat restart
+      const canvasElement = document.getElementById('gameCanvas');
+      canvasElement.classList.add('no-transition');
+      canvasElement.className = 'theme-buildings';
+      setTimeout(() => {
+        canvasElement.classList.remove('no-transition');
+      }, 10); 
+
+      setTimeout(() => {
+        startGame();
+      }, 500);
     }
 
-    // Sembunyikan scoreDisplay di awal
     document.getElementById('scoreDisplay').style.display = 'none'; 
+    
     startScreen.style.display = "block";
+    setTimeout(() => {
+        startScreen.classList.add('show');
+    }, 50);
+
     createPlatforms();
     createCoins();
+
+    if (highScore > 0) {
+        highScoreDisplay.textContent = 'SKOR TERTINGGI: ' + highScore;
+    } else {
+        highScoreDisplay.textContent = '';
+    }
 
     if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js')
