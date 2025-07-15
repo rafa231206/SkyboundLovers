@@ -110,6 +110,9 @@
     }
     #gameOverScreen {
         border: 3px solid #ff4081;
+        position: relative; /* Added for absolute positioning of deco images */
+        overflow: hidden; /* Added to contain deco images */
+        padding: 80px 20px 60px; /* Adjusted padding to make space for deco images */
     }
     #startScreen h1, #gameOverScreen h2 {
         font-size: 1.8em;
@@ -124,23 +127,32 @@
     }
     .game-over-deco {
       position: absolute;
-      width: 50px;
-      height: 50px;
-      filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.6));
-      animation: float 3s ease-in-out infinite;
+      width: 80px; /* Increased size */
+      height: 80px; /* Increased size */
+      border-radius: 50%; /* Made circular */
+      object-fit: cover; /* Ensures image covers the circle */
+      border: 3px solid #FFD700; /* Added gold border */
+      filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.8)); /* Enhanced shadow */
+      animation: float 4s ease-in-out infinite; /* Slower float animation */
+      z-index: 1; /* Ensure they are above the background but below text */
     }
     .game-over-deco.left {
-      left: 20px;
-      top: 20px;
+      left: 15px; /* Adjusted position */
+      top: 15px; /* Adjusted position */
+      transform: rotate(-10deg); /* Added slight rotation */
     }
     .game-over-deco.right {
-      right: 20px;
-      top: 20px;
+      right: 15px; /* Adjusted position */
+      top: 15px; /* Adjusted position */
+      transform: rotate(10deg); /* Added slight rotation */
     }
     @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-5px); }
+      0%, 100% { transform: translateY(0) rotate(var(--rotation, 0deg)); }
+      50% { transform: translateY(-8px) rotate(var(--rotation, 0deg)); } /* Increased float distance */
     }
+    .game-over-deco.left { --rotation: -10deg; }
+    .game-over-deco.right { --rotation: 10deg; }
+
     .character-options {
       display: flex;
       flex-direction: row;
@@ -351,6 +363,21 @@
             padding: 15px 15px 50px;
             font-size: 16px;
         }
+        #gameOverScreen {
+            padding: 60px 15px 50px; /* Adjusted for smaller screens */
+        }
+        .game-over-deco {
+            width: 60px; /* Smaller on tablets */
+            height: 60px;
+        }
+        .game-over-deco.left {
+            left: 10px;
+            top: 10px;
+        }
+        .game-over-deco.right {
+            right: 10px;
+            top: 10px;
+        }
         #startScreen h1, #gameOverScreen h2 {
             font-size: 1.5em;
             margin-bottom: 15px;
@@ -407,6 +434,21 @@
         #startScreen, #gameOverScreen {
             padding: 10px 10px 40px;
             font-size: 14px;
+        }
+        #gameOverScreen {
+            padding: 50px 10px 40px; /* Adjusted for smaller screens */
+        }
+        .game-over-deco {
+            width: 50px; /* Even smaller on phones */
+            height: 50px;
+        }
+        .game-over-deco.left {
+            left: 8px;
+            top: 8px;
+        }
+        .game-over-deco.right {
+            right: 8px;
+            top: 8px;
         }
         #startScreen h1, #gameOverScreen h2 {
             font-size: 1.2em;
