@@ -5,8 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
   <title>Skybound Lovers</title>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2196F3">
   <style>
-    /* General Styles */
+    /* Global Styles */
+    *, *::before, *::after {
+      box-sizing: border-box; /* Ensures consistent box model */
+    }
+
     body {
       margin: 0;
       padding: 0;
@@ -19,12 +25,12 @@
       align-items: center;
       min-height: 100vh;
       height: 100%;
-      transition: all 0.5s ease-in-out;
-      -webkit-tap-highlight-color: transparent;
+      transition: background 0.5s ease-in-out; /* Smooth background transition */
+      -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
     }
 
     .no-transition {
-      transition: none !important;
+      transition: none !important; /* Utility class to disable transitions */
     }
 
     canvas {
@@ -37,7 +43,7 @@
       max-width: 400px;
       height: 600px;
       transition: background-color 0.5s ease-in-out;
-      touch-action: none;
+      touch-action: none; /* Prevent default touch actions */
       position: relative;
       z-index: 1;
     }
@@ -48,10 +54,11 @@
       position: absolute;
       width: 100%;
       height: 100%;
-      transition: all 1.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+      transition: all 1.5s cubic-bezier(0.215, 0.61, 0.355, 1); /* Smooth parallax transition */
       z-index: -1;
       background-size: cover;
       background-position: center;
+      pointer-events: none; /* Ensure layers don't interfere with canvas interaction */
     }
 
     /* Theme 1: Buildings */
@@ -195,6 +202,7 @@
       box-shadow: 0 0 30px rgba(0,0,0,0.7);
       border: 3px solid #2196F3;
       max-width: 90%;
+      width: 350px; /* Fixed width for better consistency */
       box-sizing: border-box;
       display: none;
       opacity: 0;
@@ -220,29 +228,31 @@
         margin-top: 10px;
     }
     #loadingScreen {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: #000;
-  color: #fff;
-  font-family: 'Press Start 2P', cursive;
-  font-size: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-}
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: #000;
+      color: #fff;
+      font-family: 'Press Start 2P', cursive;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
     /* Character Selection */
     .character-options {
       display: flex;
-      flex-direction: row;
+      flex-direction: row; /* Tetap row untuk tampilan desktop */
       gap: 20px;
       margin-top: 20px;
-      justify-content: center;
+      justify-content: center; /* Pusatkan secara horizontal */
       flex-wrap: wrap;
+      align-items: flex-start; /* Pusatkan secara vertikal di awal baris */
     }
+    
     .character-card {
       padding: 15px;
       border-radius: 20px;
@@ -250,17 +260,26 @@
       transition: all 0.4s ease;
       cursor: pointer;
       border: 2px solid transparent;
-      flex: 1 1 45%;
+      /* flex: 1 1 45%; */ /* Hapus atau komentari ini */
       min-width: 120px;
       max-width: 180px;
       box-sizing: border-box;
       margin: 5px;
+      display: flex; /* Tambahkan ini */
+      flex-direction: column; /* Tambahkan ini */
+      align-items: center; /* Pusatkan konten card */
+      text-align: center; /* Pusatkan teks di dalam card */
     }
     .character-card:hover {
       transform: translateY(-5px) scale(1.05);
       background: rgba(255,255,255,0.3);
       border: 2px solid #FFD700;
       box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    }
+    .character-card.selected {
+      border: 2px solid #FFD700;
+      box-shadow: 0 0 15px #FFD700;
+      transform: scale(1.05);
     }
     .character-image {
       width: 100px;
@@ -571,11 +590,54 @@
       z-index: 4;
     }
 
+    /* Audio control button */
+    #audioControl {
+      position: fixed;
+      bottom: 20px; /* Pindah ke bawah */
+      right: 20px; /* Pindah ke kanan */
+      background: rgba(0, 0, 0, 0.6);
+      color: white;
+      border: 2px solid #FFD700;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.2em;
+      cursor: pointer;
+      z-index: 101;
+      transition: background 0.3s ease;
+    }
+    #audioControl:hover {
+      background: rgba(0, 0, 0, 0.8);
+    }
+
+    /* Theme popup */
+    .theme-popup {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 15px 30px;
+      background: #2196F3; /* Default color, overridden by JS */
+      color: white;
+      border-radius: 50px;
+      font-family: 'Press Start 2P', cursive;
+      font-size: 0.8em;
+      z-index: 1000;
+      box-shadow: 0 0 20px rgba(255,255,255,0.7);
+      animation: pulse 1s 2;
+      opacity: 1;
+      transition: all 0.5s ease-out;
+    }
+
     /* Media Queries for Responsiveness */
     @media (max-width: 768px) {
         #startScreen, #gameOverScreen, #pauseScreen {
             padding: 15px 15px 50px;
             font-size: 16px;
+            width: 90%; /* Adjust width for smaller screens */
         }
         #gameOverScreen {
             padding-top: 60px;
@@ -585,12 +647,13 @@
             margin-bottom: 15px;
         }
         .character-options {
-            flex-direction: column;
+            flex-direction: row; /* Ubah menjadi row untuk 768px ke bawah */
+            justify-content: center; /* Pusatkan lagi */
             gap: 15px;
         }
         .character-card {
-            flex-basis: 80%;
-            max-width: 250px;
+            flex-basis: auto; /* Biarkan browser menentukan lebar berdasarkan konten */
+            max-width: 150px; /* Batasi lebar agar tidak terlalu besar */
             padding: 15px;
         }
         .character-image {
@@ -646,6 +709,13 @@
           font-size: 0.7em;
           padding: 10px;
         }
+        #audioControl {
+          width: 35px;
+          height: 35px;
+          font-size: 1em;
+          bottom: 10px; /* Sesuaikan posisi untuk layar kecil */
+          right: 10px; /* Sesuaikan posisi untuk layar kecil */
+        }
     }
 
     @media (max-width: 480px) {
@@ -681,11 +751,13 @@
           animation: float 3s ease-in-out infinite;
         }
         .character-options {
+            flex-direction: row; /* Tetap row untuk 480px ke bawah */
+            justify-content: center; /* Pusatkan lagi */
             gap: 10px;
         }
         .character-card {
             padding: 10px;
-            max-width: 200px;
+            max-width: 120px; /* Lebih kecil untuk layar sangat kecil */
         }
         .character-image {
             width: 70px;
@@ -742,19 +814,29 @@
         }
     }
   </style>
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#2196F3">
 </head>
 <body>
-    <div id="loadingScreen">Memuat...</div>  
+  <div id="loadingScreen">Memuat Aset...</div>  
+
+  <!-- Audio Elements -->
+  <audio id="jumpSound" src="jump.mp3" preload="auto" muted></audio>
+  <audio id="coinSound" src="coin.mp3" preload="auto" muted></audio>
+  <audio id="gameOverSound" src="gameover.mp3" preload="auto" muted></audio>
+  <audio id="powerupSound" src="powerup.mp3" preload="auto" muted></audio>
+  <audio id="damageSound" src="damage.mp3" preload="auto" muted></audio>
+  <audio id="buttonSound" src="click.mp3" preload="auto" muted></audio>
+  <audio id="bgm" src="bgm.mp3" preload="auto" loop muted></audio>
+  <audio id="menuBgm" src="menu.mp3" preload="auto" loop></audio>
+
+  <!-- Main Game Container -->
   <div id="startScreen">
     <img id="gameLogo" src="popup.jpg" alt="Skybound Lovers Logo">
     <h1>Skybound Lovers</h1>
     <div id="mainMenu">
       <button class="main-button" onclick="showCharacterSelect()">Mulai Game</button>
       <div id="characterPreview" style="margin: 20px auto; display: none;">
-        <h3>Pilihan Karakter:</h3>
-        <img id="selectedCharacterImg" src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/e99a780f-00a0-4b1a-ac42-516cc062ac52.png" alt="Karakter Terpilih" 
+        <h3>Karakter Terpilih:</h3>
+        <img id="selectedCharacterImg" src="" alt="Karakter Terpilih" 
              style="width: 100px; height:100px; border-radius:50%; border:3px solid gold">
       </div>
       <button class="leaderboard-button" onclick="toggleLeaderboard()">⬆ Lihat Leaderboard</button>
@@ -767,22 +849,25 @@
     <div id="characterSelect" style="display: none;">
       <h2>Pilih Karakter</h2>
       <div class="character-options">
-        <div class="character-card" onclick="previewCharacter(1)">
+        <div class="character-card" data-character-id="1">
           <img src="laki-laki copy.png" alt="Karakter Laki-laki" class="character-image">
           <p>Laki-laki</p>
         </div>
-        <div class="character-card" onclick="previewCharacter(2)">
+        <div class="character-card" data-character-id="2">
           <img src="perempuan copyy.png" alt="Karakter Perempuan" class="character-image">
           <p>Perempuan</p>
         </div>
       </div>
+      <button class="main-button" id="startGameButton" style="display: none;">Mulai Game!</button>
       <button class="back-button" onclick="backToMain()">⬅ Kembali</button>
     </div>
   </div>
+
   <p id="creatorText">
     CREATED BY RAFA STUDIOS 
     <br>© 2025 - ALL RIGHTS RESERVED
   </p>
+
   <canvas id="gameCanvas" width="400" height="600"></canvas>
 
   <!-- Score and Coin Display -->
@@ -813,30 +898,36 @@
   
     <div class="button-group">
       <button class="game-over-button" onclick="restartGame()">Main Lagi!</button>
-      <button class="back-button" onclick="backToStartMenu()">Kembali ke Menu</button>
+      <button class="back-button" onclick="showStartMenu()">Kembali ke Menu</button>
     </div>
   </div>
   
-
   <!-- Pause Screen -->
   <div id="pauseScreen">
     <h2>Game Dijeda</h2>
     <div class="button-group">
       <button class="pause-button" onclick="togglePause()">Lanjut</button>
-      <button class="back-button" onclick="backToStartMenu()">Kembali ke Menu</button>
+      <button class="back-button" onclick="showStartMenu()">Kembali ke Menu</button>
     </div>
   </div>
 
   <!-- Coin Milestone Popup -->
   <img id="coinMilestonePopup" src="popup.jpg" alt="Milestone Koin">
 
-  <script>
-    window.addEventListener("load", function () {
-  const loadingScreen = document.getElementById("loadingScreen");
-  if (loadingScreen) {
-    loadingScreen.style.display = "none";
-  }
-});
+  <!-- Audio Control Button -->
+  <button id="audioControl" aria-label="Toggle Audio">🔇</button>
+
+  <script defer>
+    // DOM Elements
+    const loadingScreen = document.getElementById("loadingScreen");
+    const jumpSound = document.getElementById("jumpSound");
+    const coinSound = document.getElementById("coinSound");
+    const gameOverSound = document.getElementById("gameOverSound");
+    const powerupSound = document.getElementById("powerupSound");
+    const damageSound = document.getElementById("damageSound");
+    const buttonSound = document.getElementById("buttonSound");
+    const bgm = document.getElementById("bgm");
+    const menuBgm = document.getElementById("menuBgm");
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
     const startScreen = document.getElementById("startScreen");
@@ -850,8 +941,13 @@
     const livesDisplay = document.getElementById('livesDisplay');
     const pauseButton = document.getElementById('pauseButton');
     const leaderboardList = document.getElementById('leaderboardList');
+    const characterCards = document.querySelectorAll('.character-card');
+    const selectedCharacterImg = document.getElementById('selectedCharacterImg');
+    const startGameButton = document.getElementById('startGameButton');
+    const audioControl = document.getElementById('audioControl');
 
-    let selectedCharacter = 1;
+    // Game State Variables
+    let selectedCharacter = null; // Store the ID of the selected character
     const player = {
       x: 180,
       y: 500,
@@ -879,6 +975,7 @@
     let highScore = localStorage.getItem('highScore') ? parseInt(localStorage.getItem('highScore')) : 0;
     let lives = 3;
     let animationFrameId; // To store requestAnimationFrame ID
+    let isAudioMuted = false; // Initial audio state
 
     const coins = [];
     const coinImage = new Image();
@@ -892,10 +989,120 @@
     let jumpBoostActive = false;
     let originalJumpPower = player.jumpPower;
 
+    // Asset Paths
+    const imageAssets = [
+      'popup.jpg',
+      'laki-laki copy.png',
+      'ChatGPT Image 15 Jul 2025 15.43.23.png',
+      'perempuan copyy.png',
+      'ChatGPT_Image_15_Jul_2025_15.20.27-removebg-preview.png',
+      'coin.png',
+      'heart.png',
+      'ana.jpg',
+      'farel.jpg',
+      'powerup.png',
+      'https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/504ea317-e0a0-4a72-a92a-ccdcfcbc6893.png', // Buildings theme
+      'https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/ed8cb5e3-2b89-47bb-9c86-80d2a449f7a3.png', // Birds theme
+      'https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/8f111458-08a8-45c6-afbb-5de16e209a41.png' // Space theme
+    ];
+
+    const audioAssets = [
+      'jump.mp3',
+      'coin.mp3',
+      'gameover.mp3',
+      'powerup.mp3',
+      'damage.mp3',
+      'click.mp3',
+      'bgm.mp3',
+      'menu.mp3'
+    ];
+
+    /**
+     * Preloads all specified image and audio assets.
+     * Displays a loading screen until all assets are loaded.
+     */
+    async function preloadAssets() {
+      const imagePromises = imageAssets.map(src => {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.src = src;
+          img.onload = () => resolve();
+          img.onerror = () => {
+            console.warn(`Failed to load image: ${src}`);
+            resolve(); // Resolve even on error to not block loading
+          };
+        });
+      });
+
+      const audioPromises = audioAssets.map(src => {
+        return new Promise((resolve, reject) => {
+          const audio = new Audio();
+          audio.src = src;
+          audio.oncanplaythrough = () => resolve();
+          audio.onerror = () => {
+            console.warn(`Failed to load audio: ${src}`);
+            resolve(); // Resolve even on error
+          };
+          audio.load(); // Start loading the audio
+        });
+      });
+
+      await Promise.all([...imagePromises, ...audioPromises]);
+      loadingScreen.style.display = "none";
+    }
+
+    /**
+     * Plays an audio element, handling potential Promise rejections.
+     * @param {HTMLAudioElement} audioElement - The audio element to play.
+     */
+    function playSound(audioElement) {
+      if (isAudioMuted) return;
+      if (audioElement) {
+        audioElement.currentTime = 0; // Reset to start
+        audioElement.play().catch(error => {
+          // Autoplay was prevented. Show a UI element to let the user manually play.
+          console.warn("Autoplay prevented:", error);
+          // For background music, we might need a user interaction to start it.
+          // For short sound effects, this might not be a big issue.
+        });
+      }
+    }
+
+    /**
+     * Toggles the mute state of all audio elements.
+     */
+    function toggleAudioMute() {
+      isAudioMuted = !isAudioMuted;
+      const allAudio = document.querySelectorAll('audio');
+      allAudio.forEach(audio => {
+        audio.muted = isAudioMuted;
+      });
+      audioControl.textContent = isAudioMuted ? '🔇' : '🔊';
+      // If unmuting, try to play menuBgm if it's the start screen
+      if (!isAudioMuted && !gameStarted) {
+        playSound(menuBgm);
+      }
+      if (isAudioMuted) {
+    menuBgm.pause();
+    bgm.pause();
+  }
+    }
+
+    // Event listener for all buttons to play click sound
+    document.querySelectorAll("button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        playSound(buttonSound);
+      });
+    });
+
     // Function to draw the player
     function drawPlayer() {
       if (player.image.src && player.image.complete) {
         ctx.drawImage(player.image, player.x, player.y, player.width, player.height);
+      } else {
+        // Fallback if image fails to load
+        ctx.fillStyle = 'blue';
+        ctx.fillRect(player.x, player.y, player.width, player.height);
       }
     }
 
@@ -1184,6 +1391,7 @@
             coin.taken = true;
             coinScore++;
             coins.splice(i, 1); // Remove collected coin
+            playSound(coinSound);
           }
         }
       }
@@ -1210,6 +1418,7 @@
 
     // Activate power-up effect
     function activatePowerUp(type) {
+      playSound(powerupSound);
       if (type === 'jump-boost') {
         if (!jumpBoostActive) {
           player.jumpPower *= 1.5; // Increase jump power
@@ -1261,15 +1470,17 @@
       if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
 
       // Move platforms down if player is high enough
-      if (player.y < canvas.height / 2) { // Changed from 300 to canvas.height / 2 for responsiveness
-        movePlatforms(3);
-        player.y = canvas.height / 2;
+      if (player.y < canvas.height / 2) {
+        const offset = canvas.height / 2 - player.y;
+        player.y = canvas.height / 2;        // tetap jaga dia di tengah
+        movePlatforms(offset);               // geser platform sesuai selisih aslinya
       }
 
       // Check if player falls off screen
       if (player.y > canvas.height) {
         lives--;
         updateLivesDisplay();
+        playSound(damageSound);
         if (lives <= 0) {
           endGame();
           return; // Stop update loop
@@ -1280,7 +1491,7 @@
           player.speed = 0;
           player.jumps = 0;
 
-          // Efek visual saat respawn (opsional)
+          // Visual effect on respawn
           createParticles(player.x + player.width / 2, player.y + player.height / 2);
         }
       }
@@ -1367,11 +1578,14 @@
       document.getElementById('scoreDisplay').style.display = 'none';
       livesDisplay.style.display = 'none';
       pauseButton.style.display = 'none';
-
+      audioControl.style.display = 'flex'; // Tampilkan tombol mute saat game berakhir
+      playSound(gameOverSound);
       gameOverScreen.style.display = 'block';
       setTimeout(() => {
           gameOverScreen.classList.add('show');
       }, 50);
+      playSound(menuBgm);
+      bgm.pause();
     }
 
     // Update score and coin display
@@ -1394,7 +1608,7 @@
 
     // Keyboard controls
     document.addEventListener("keydown", e => {
-      if (isPaused) return;
+      if (isPaused || !gameStarted) return;
       if (e.key === "ArrowLeft") {
         player.speed = -player.maxSpeed;
       } else if (e.key === "ArrowRight") {
@@ -1403,12 +1617,14 @@
         if (player.jumps < player.maxJumps) {
           player.dy = player.jumpPower;
           player.jumps++;
+          createParticles(player.x + player.width/2, player.y + player.height);
+          playSound(jumpSound);
         }
       }
     });
 
     document.addEventListener("keyup", e => {
-      if (isPaused) return;
+      if (isPaused || !gameStarted) return;
       if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
         player.speed = 0;
       }
@@ -1418,14 +1634,14 @@
     let touchStartX = 0;
     let touchStartY = 0;
     canvas.addEventListener('touchstart', (e) => {
-        if (isPaused) return;
+        if (isPaused || !gameStarted) return;
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
         e.preventDefault(); // Prevent scrolling
     }, { passive: false });
 
     canvas.addEventListener('touchmove', (e) => {
-        if (isPaused) return;
+        if (isPaused || !gameStarted) return;
         const touchCurrentX = e.touches[0].clientX;
         const diffX = touchCurrentX - touchStartX;
 
@@ -1440,7 +1656,7 @@
     }, { passive: false });
 
     canvas.addEventListener('touchend', (e) => {
-        if (isPaused) return;
+        if (isPaused || !gameStarted) return;
         player.speed = 0;
         const touchEndX = e.changedTouches[0].clientX;
         const touchEndY = e.changedTouches[0].clientY;
@@ -1451,12 +1667,22 @@
           if (player.jumps < player.maxJumps) {
             player.dy = player.jumpPower;
             player.jumps++;
+            createParticles(player.x + player.width/2, player.y + player.height);
+            playSound(jumpSound);
           }
         }
     });
 
     // Start game function
     function startGame() {
+      if (!selectedCharacter) {
+        alert("Silakan pilih karakter terlebih dahulu!");
+        return;
+      }
+
+      playSound(bgm);
+      menuBgm.pause();
+
       startScreen.classList.remove('show');
       setTimeout(() => {
         startScreen.style.display = "none";
@@ -1465,6 +1691,7 @@
       document.getElementById('scoreDisplay').style.display = 'flex'; 
       livesDisplay.style.display = 'flex';
       pauseButton.style.display = 'block';
+      audioControl.style.display = 'none'; // Sembunyikan tombol mute saat game dimulai
       
       // Initialize game state
       score = 0;
@@ -1513,12 +1740,16 @@
         setTimeout(() => {
           pauseScreen.classList.add('show');
         }, 50);
+        bgm.pause();
+        audioControl.style.display = 'flex'; // Tampilkan tombol mute saat game dijeda
       } else {
         pauseScreen.classList.remove('show');
         setTimeout(() => {
           pauseScreen.style.display = 'none';
           update(); // Resume game loop
         }, 500);
+        playSound(bgm);
+        audioControl.style.display = 'none'; // Sembunyikan tombol mute saat game dilanjutkan
       }
     }
 
@@ -1526,71 +1757,29 @@
     function showCharacterSelect() {
       document.getElementById('mainMenu').style.display = 'none';
       document.getElementById('characterSelect').style.display = 'block';
+      // Reset selected character and hide start game button
+      selectedCharacter = null;
+      startGameButton.style.display = 'none';
+      characterCards.forEach(card => card.classList.remove('selected'));
+      selectedCharacterImg.src = ""; // Clear preview image
+      document.getElementById('characterPreview').style.display = 'none';
     }
 
-    // Back to main menu from character select
-    function backToMain() {
-      document.getElementById('characterSelect').style.display = 'none';
-      document.getElementById('mainMenu').style.display = 'block';
-      loadLeaderboard(); // Reload leaderboard when returning to main menu
-    }
-
-    // Preview and select character
-    function previewCharacter(character) {
-      selectedCharacter = character;
-      const charImage = character === 1 ? "ChatGPT Image 15 Jul 2025 15.43.23.png" : "ChatGPT_Image_15_Jul_2025_15.20.27-removebg-preview.png";
-      document.getElementById('selectedCharacterImg').src = charImage;
-      document.getElementById('characterPreview').style.display = 'block';
-      
-      player.image.src = charImage; 
-      player.image.onload = () => {
-        startGame(); // ⬅ MULAI GAME OTOMATIS DI SINI
-        // No longer start game directly from here, user clicks "Mulai Game"
-      };
-      if (player.image.complete) { // If image is already cached
-        // No longer start game directly from here
-      }
-    }
-    
-    // Show theme change popup
-    function showThemePopup(message, color) {
-      const popup = document.createElement('div');
-      popup.textContent = message;
-      popup.style.position = 'absolute';
-      popup.style.top = '50%';
-      popup.style.left = '50%';
-      popup.style.transform = 'translate(-50%, -50%)';
-      popup.style.padding = '15px 30px';
-      popup.style.background = color;
-      popup.style.color = 'white';
-      popup.style.borderRadius = '50px';
-      popup.style.fontFamily = "'Press Start 2P', cursive";
-      popup.style.fontSize = '0.8em';
-      popup.style.zIndex = '1000';
-      popup.style.boxShadow = '0 0 20px rgba(255,255,255,0.7)';
-      popup.style.animation = 'pulse 1s 2';
-      
-      document.body.appendChild(popup);
-      
-      setTimeout(() => {
-        popup.style.transition = 'all 0.5s ease-out';
-        popup.style.opacity = '0';
-        setTimeout(() => popup.remove(), 500);
-      }, 1500);
-    }
-
-    // Back to start menu from game over screen or pause screen
-    function backToStartMenu() {
+    // Back to main menu from character select or game over/pause screen
+    function showStartMenu() {
       gameOverScreen.classList.remove('show');
       pauseScreen.classList.remove('show');
       setTimeout(() => {
         gameOverScreen.style.display = 'none';
         pauseScreen.style.display = 'none';
         startScreen.style.display = 'block';
+        document.getElementById('mainMenu').style.display = 'block'; // Ensure main menu is visible
+        document.getElementById('characterSelect').style.display = 'none'; // Hide character select
         setTimeout(() => {
           startScreen.classList.add('show');
         }, 50);
       }, 500);
+      
       // Clear all platform DOM elements when returning to menu
       document.querySelectorAll('.game-platform').forEach(el => el.remove());
       document.querySelectorAll('.power-up').forEach(el => el.remove()); // Remove power-up elements
@@ -1603,7 +1792,50 @@
       document.getElementById('scoreDisplay').style.display = 'none';
       livesDisplay.style.display = 'none';
       pauseButton.style.display = 'none';
+      audioControl.style.display = 'flex'; // Tampilkan tombol mute saat kembali ke menu utama
       loadLeaderboard(); // Reload leaderboard when returning to main menu
+      playSound(menuBgm);
+      bgm.pause();
+    }
+
+    // Back to main menu from character select
+    function backToMain() {
+      document.getElementById('characterSelect').style.display = 'none';
+      document.getElementById('mainMenu').style.display = 'block';
+      loadLeaderboard(); // Reload leaderboard when returning to main menu
+    }
+
+    // Character selection logic
+    characterCards.forEach(card => {
+      card.addEventListener('click', () => {
+        characterCards.forEach(c => c.classList.remove('selected')); // Remove selected from all
+        card.classList.add('selected'); // Add selected to clicked card
+        selectedCharacter = parseInt(card.dataset.characterId);
+        
+        const charImageSrc = selectedCharacter === 1 ? "ChatGPT Image 15 Jul 2025 15.43.23.png" : "ChatGPT_Image_15_Jul_2025_15.20.27-removebg-preview.png";
+        selectedCharacterImg.src = charImageSrc;
+        document.getElementById('characterPreview').style.display = 'block';
+        player.image.src = charImageSrc;
+        startGameButton.style.display = 'block'; // Show the "Mulai Game!" button
+      });
+    });
+
+    // Event listener for the "Mulai Game!" button in character select
+    startGameButton.addEventListener('click', startGame);
+    
+    // Show theme change popup
+    function showThemePopup(message, color) {
+      const popup = document.createElement('div');
+      popup.textContent = message;
+      popup.classList.add('theme-popup');
+      popup.style.background = color;
+      
+      document.body.appendChild(popup);
+      
+      setTimeout(() => {
+        popup.style.opacity = '0';
+        setTimeout(() => popup.remove(), 500);
+      }, 1500);
     }
 
     // Restart game
@@ -1671,7 +1903,10 @@
     }
 
     // Initial setup when page loads
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Preload assets first
+      await preloadAssets();
+
       document.getElementById('scoreDisplay').style.display = 'none'; 
       livesDisplay.style.display = 'none';
       pauseButton.style.display = 'none';
@@ -1693,30 +1928,18 @@
       // Load leaderboard on startup
       loadLeaderboard();
 
-      // Preload power-up image
-      powerUpImage.src = "powerup.png"; // Make sure you have this image
-      powerUpImage.onload = () => {
-        // Image loaded
-      };
-      powerUpImage.onerror = () => {
-        console.warn("Power-up image 'powerup_jump.png' not found. Using default background color for power-ups.");
-        // Fallback: draw a simple circle if image not found
-        drawPowerUps = function() {
-          powerUps.forEach(pu => {
-            if (!pu.taken) {
-              ctx.fillStyle = 'gold';
-              ctx.beginPath();
-              ctx.arc(pu.x + pu.width / 2, pu.y + pu.height / 2, pu.width / 2, 0, Math.PI * 2);
-              ctx.fill();
-              ctx.fillStyle = 'white';
-              ctx.font = '15px "Press Start 2P"';
-              ctx.textAlign = 'center';
-              ctx.textBaseline = 'middle';
-              ctx.fillText('J', pu.x + pu.width / 2, pu.y + pu.height / 2 + 2); // 'J' for Jump
-            }
-          });
-        };
-      };
+      // Set initial audio control icon
+      audioControl.textContent = isAudioMuted ? '🔇' : '🔊';
+      audioControl.addEventListener('click', toggleAudioMute);
+      audioControl.style.display = 'flex'; // Pastikan tombol mute terlihat di menu awal
+
+      // Try to play menu BGM after user interaction (e.g., after loading screen disappears)
+      // This might still be blocked by browser autoplay policies, but it's the best attempt.
+      document.addEventListener('click', () => {
+      if (!isAudioMuted && menuBgm.paused) {
+        playSound(menuBgm);
+      }
+    }, { once: true });
     });
 
     // Service Worker registration for PWA
