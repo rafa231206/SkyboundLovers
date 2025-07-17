@@ -590,11 +590,17 @@
       z-index: 4;
     }
 
-    /* Audio control button */
-    #audioControl {
+    /* Audio control buttons */
+    .audio-controls {
       position: fixed;
-      bottom: 20px; /* Pindah ke bawah */
-      right: 20px; /* Pindah ke kanan */
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      gap: 10px;
+      z-index: 101;
+    }
+
+    .audio-control-button {
       background: rgba(0, 0, 0, 0.6);
       color: white;
       border: 2px solid #FFD700;
@@ -606,10 +612,9 @@
       align-items: center;
       font-size: 1.2em;
       cursor: pointer;
-      z-index: 101;
       transition: background 0.3s ease;
     }
-    #audioControl:hover {
+    .audio-control-button:hover {
       background: rgba(0, 0, 0, 0.8);
     }
 
@@ -709,12 +714,14 @@
           font-size: 0.7em;
           padding: 10px;
         }
-        #audioControl {
+        .audio-control-button {
           width: 35px;
           height: 35px;
           font-size: 1em;
-          bottom: 10px; /* Sesuaikan posisi untuk layar kecil */
-          right: 10px; /* Sesuaikan posisi untuk layar kecil */
+        }
+        .audio-controls {
+          bottom: 10px;
+          right: 10px;
         }
     }
 
@@ -819,13 +826,13 @@
   <div id="loadingScreen">Memuat Aset...</div>  
 
   <!-- Audio Elements -->
-  <audio id="jumpSound" src="jump.mp3" preload="auto" muted></audio>
-  <audio id="coinSound" src="coin.mp3" preload="auto" muted></audio>
-  <audio id="gameOverSound" src="gameover.mp3" preload="auto" muted></audio>
-  <audio id="powerupSound" src="powerup.mp3" preload="auto" muted></audio>
-  <audio id="damageSound" src="damage.mp3" preload="auto" muted></audio>
-  <audio id="buttonSound" src="click.mp3" preload="auto" muted></audio>
-  <audio id="bgm" src="bgm.mp3" preload="auto" loop muted></audio>
+  <audio id="jumpSound" src="jump.mp3" preload="auto"></audio>
+  <audio id="coinSound" src="coin.mp3" preload="auto"></audio>
+  <audio id="gameOverSound" src="gameover.mp3" preload="auto"></audio>
+  <audio id="powerupSound" src="powerup.mp3" preload="auto"></audio>
+  <audio id="damageSound" src="damage.mp3" preload="auto"></audio>
+  <audio id="buttonSound" src="click.mp3" preload="auto"></audio>
+  <audio id="bgm" src="bgm.mp3" preload="auto" loop></audio>
   <audio id="menuBgm" src="menu.mp3" preload="auto" loop></audio>
 
   <!-- Main Game Container -->
@@ -914,8 +921,11 @@
   <!-- Coin Milestone Popup -->
   <img id="coinMilestonePopup" src="popup.jpg" alt="Milestone Koin">
 
-  <!-- Audio Control Button -->
-  <button id="audioControl" aria-label="Toggle Audio">🔇</button>
+  <!-- Audio Control Buttons -->
+  <div class="audio-controls">
+    <button id="bgmControl" class="audio-control-button" aria-label="Toggle Background Music">🎵</button>
+    <button id="sfxControl" class="audio-control-button" aria-label="Toggle Sound Effects">🔊</button>
+  </div>
 
   <script defer>
     // DOM Elements
@@ -944,7 +954,8 @@
     const characterCards = document.querySelectorAll('.character-card');
     const selectedCharacterImg = document.getElementById('selectedCharacterImg');
     const startGameButton = document.getElementById('startGameButton');
-    const audioControl = document.getElementById('audioControl');
+    const bgmControl = document.getElementById('bgmControl');
+    const sfxControl = document.getElementById('sfxControl');
 
     // Game State Variables
     let selectedCharacter = null; // Store the ID of the selected character
@@ -975,7 +986,8 @@
     let highScore = localStorage.getItem('highScore') ? parseInt(localStorage.getItem('highScore')) : 0;
     let lives = 3;
     let animationFrameId; // To store requestAnimationFrame ID
-    let isAudioMuted = false; // Initial audio state
+    let isBgmMuted = localStorage.getItem('isBgmMuted') === 'true'; // Load BGM mute state
+    let isSfxMuted = localStorage.getItem('isSfxMuted') === 'true'; // Load SFX mute state
 
     const coins = [];
     const coinImage = new Image();
@@ -1054,48 +1066,61 @@
     /**
      * Plays an audio element, handling potential Promise rejections.
      * @param {HTMLAudioElement} audioElement - The audio element to play.
+     * @param {string} type - 'sfx' or 'bgm'
      */
-    function playSound(audioElement) {
-      if (isAudioMuted) return;
+    function playSound(audioElement, type) {
+      if (type === 'sfx' && isSfxMuted) return;
+      if (type === 'bgm' && isBgmMuted) return;
+
       if (audioElement) {
         audioElement.currentTime = 0; // Reset to start
         audioElement.play().catch(error => {
-          // Autoplay was prevented. Show a UI element to let the user manually play.
           console.warn("Autoplay prevented:", error);
-          // For background music, we might need a user interaction to start it.
-          // For short sound effects, this might not be a big issue.
         });
       }
     }
 
     /**
-     * Toggles the mute state of all audio elements.
+     * Toggles the mute state of BGM.
      */
-    function toggleAudioMute() {
-      isAudioMuted = !isAudioMuted;
-      const allAudio = document.querySelectorAll('audio');
-      allAudio.forEach(audio => {
-        audio.muted = isAudioMuted;
-      });
-      audioControl.textContent = isAudioMuted ? '🔇' : '🔊';
-      // If unmuting, try to play menuBgm if it's the start screen
-      if (!isAudioMuted && !gameStarted) {
-        playSound(menuBgm);
+    function toggleBgmMute() {
+      isBgmMuted = !isBgmMuted;
+      localStorage.setItem('isBgmMuted', isBgmMuted);
+      if (isBgmMuted) {
+        menuBgm.pause();
+        bgm.pause();
+        bgmControl.textContent = '🔇';
+      } else {
+        if (gameStarted) {
+          playSound(bgm, 'bgm');
+        } else {
+          playSound(menuBgm, 'bgm');
+        }
+        bgmControl.textContent = '🎵';
       }
-      if (isAudioMuted) {
-    menuBgm.pause();
-    bgm.pause();
-  }
+    }
+
+    /**
+     * Toggles the mute state of SFX.
+     */
+    function toggleSfxMute() {
+      isSfxMuted = !isSfxMuted;
+      localStorage.setItem('isSfxMuted', isSfxMuted);
+      const sfxElements = [jumpSound, coinSound, gameOverSound, powerupSound, damageSound, buttonSound];
+      sfxElements.forEach(audio => {
+        audio.muted = isSfxMuted;
+      });
+      sfxControl.textContent = isSfxMuted ? '🔕' : '🔊';
     }
 
     // Event listener for all buttons to play click sound
     document.querySelectorAll("button").forEach(btn => {
       btn.addEventListener("click", () => {
-        playSound(buttonSound);
+        playSound(buttonSound, 'sfx');
       });
     });
 
-    // Function to draw the player
+    // Function to draw the player (using canvas for player)
     function drawPlayer() {
       if (player.image.src && player.image.complete) {
         ctx.drawImage(player.image, player.x, player.y, player.width, player.height);
@@ -1106,7 +1131,7 @@
       }
     }
 
-    // Function to draw coins
+    // Function to draw coins (using canvas for coins)
     function drawCoins() {
       coins.forEach(coin => {
         if (!coin.taken) {
@@ -1115,7 +1140,7 @@
       });
     }
 
-    // Function to draw power-ups
+    // Function to draw power-ups (using canvas for power-ups)
     function drawPowerUps() {
       powerUps.forEach(pu => {
         if (!pu.taken) {
@@ -1153,11 +1178,16 @@
       });
     }
 
-    // Function to create initial platforms
-    function createPlatforms() {
-      platforms.length = 0; // Clear existing platforms
+    // Function to initialize platforms (create DOM elements once)
+    function initializePlatforms() {
+      // Clear existing platforms from array and DOM
+      platforms.forEach(p => {
+        if (p.element) p.element.remove();
+      });
+      platforms.length = 0;
+
       // Initial stable platform
-      platforms.push({
+      const initialPlatform = {
         x: 0,
         y: 570,
         width: 400,
@@ -1165,97 +1195,56 @@
         color: "#ffffff",
         type: "static",
         element: null,
-        disappearing: false
-      });
+        disappearing: false,
+        touched: false
+      };
+      platforms.push(initialPlatform);
+      createPlatformElement(initialPlatform);
 
+      // Create other platforms
       for (let i = 0; i < platformCount; i++) {
-        let type = "static";
-        let width = Math.max(60, Math.floor(Math.random() * 40) + 60);
-        let height = 10;
-        let x = Math.random() * (canvas.width - width);
-        let y = 600 - (i + 1) * 60;
-        let disappearing = false;
-
-        const randomType = Math.random();
-        if (randomType < 0.2) {
-          type = "horizontal";
-          width = 80;
-        } else if (randomType < 0.4) {
-          type = "vertical";
-          width = 70;
-        } else if (randomType < 0.5) {
-          type = "obstacle";
-          width = 40;
-          height = 40;
-          y -= 20;
-        } else if (score >= 100 && randomType < 0.6) { // Disappearing platforms after score 100
-          type = "static";
-          width = 60;
-          height = 10;
-          disappearing = true;
-        }
-
-        platforms.push({
-          x: x,
-          y: y,
-          width: width,
-          height: height,
+        const newPlatform = {
+          x: Math.random() * (canvas.width - 60), // Default width
+          y: 600 - (i + 1) * 60,
+          width: 60,
+          height: 10,
           color: "#ffffff",
-          type: type,
+          type: "static",
           element: null,
-          disappearing: disappearing,
-          touched: false // For disappearing platforms
-        });
+          disappearing: false,
+          touched: false
+        };
+        platforms.push(newPlatform);
+        createPlatformElement(newPlatform);
       }
     }
 
-    // Function to draw platforms (create DOM elements)
-    function drawPlatforms() {
-      // Remove all old platform DOM elements
-      const existingPlatforms = document.querySelectorAll('.game-platform');
-      existingPlatforms.forEach(el => el.remove());
+    // Helper to create a single platform DOM element
+    function createPlatformElement(p) {
+      const platformElement = document.createElement('div');
+      platformElement.className = 'game-platform platform-cloud';
+      platformElement.style.position = 'absolute';
+      platformElement.style.width = `${p.width}px`;
+      platformElement.style.height = `${p.height}px`;
+      platformElement.style.backgroundColor = p.color;
+      p.element = platformElement;
+      document.body.appendChild(platformElement);
+      updatePlatformElementPosition(p); // Set initial position
+    }
 
-      platforms.forEach(p => {
-        const platformElement = document.createElement('div');
-        platformElement.className = 'game-platform platform-cloud';
-        platformElement.style.position = 'absolute';
-        
-        // Get canvas position to correctly place platform DOM elements
+    // Helper to update platform DOM element position
+    function updatePlatformElementPosition(p) {
+      if (p.element) {
         const canvasRect = canvas.getBoundingClientRect();
-        platformElement.style.left = `${canvasRect.left + p.x}px`;
-        platformElement.style.top = `${canvasRect.top + p.y}px`;
-        platformElement.style.width = `${p.width}px`;
-        platformElement.style.height = `${p.height}px`;
-        platformElement.style.backgroundColor = p.color;
-
-        if (p.type === "horizontal") {
-          platformElement.classList.add("platform-moving-horizontal");
-        } else if (p.type === "vertical") {
-          platformElement.classList.add("platform-moving-vertical");
-        } else if (p.type === "obstacle") {
-          platformElement.classList.add("platform-small-obstacle");
-        }
-        if (p.disappearing) {
-          platformElement.classList.add("platform-disappearing");
-        }
-
-        p.element = platformElement;
-        document.body.appendChild(platformElement);
-      });
+        p.element.style.left = `${canvasRect.left + p.x}px`;
+        p.element.style.top = `${canvasRect.top + p.y}px`;
+      }
     }
 
     // Function to move platforms and update their DOM positions
     function movePlatforms(dy) {
       platforms.forEach(p => {
         p.y += dy * platformSpeedMultiplier;
-        if (p.element) {
-          const canvasRect = canvas.getBoundingClientRect();
-          // Update top position based on canvas's current position
-          p.element.style.top = `${canvasRect.top + p.y}px`;
-          // For moving platforms, their 'left' might also need to be updated if they move relative to canvas
-          // For static platforms, their 'left' is fixed relative to canvas
-          p.element.style.left = `${canvasRect.left + p.x}px`;
-        }
 
         if (p.y > canvas.height) { // If platform goes off screen
           // Reset platform to top
@@ -1265,12 +1254,13 @@
 
           // Re-determine platform type randomly
           const randomType = Math.random();
-          if (p.element) { // Remove old type classes
+          
+          // Reset classes and properties
+          if (p.element) {
             p.element.classList.remove("platform-moving-horizontal", "platform-moving-vertical", "platform-small-obstacle", "platform-disappearing");
             p.element.style.opacity = 1; // Reset opacity for disappearing platforms
           }
-
-          p.disappearing = false; // Reset disappearing state
+          p.disappearing = false;
           p.touched = false;
 
           if (randomType < 0.2) {
@@ -1313,6 +1303,7 @@
             createPowerUp(p);
           }
         }
+        updatePlatformElementPosition(p); // Update DOM position for all platforms
       });
 
       // Move and remove coins that go off screen
@@ -1391,7 +1382,7 @@
             coin.taken = true;
             coinScore++;
             coins.splice(i, 1); // Remove collected coin
-            playSound(coinSound);
+            playSound(coinSound, 'sfx');
           }
         }
       }
@@ -1418,7 +1409,7 @@
 
     // Activate power-up effect
     function activatePowerUp(type) {
-      playSound(powerupSound);
+      playSound(powerupSound, 'sfx');
       if (type === 'jump-boost') {
         if (!jumpBoostActive) {
           player.jumpPower *= 1.5; // Increase jump power
@@ -1456,7 +1447,10 @@
 
     // Main game update loop
     function update() {
-      if (!gameStarted || isPaused) return;
+      if (!gameStarted || isPaused) {
+        animationFrameId = requestAnimationFrame(update); // Keep requesting frame even if paused to handle resume
+        return;
+      }
 
       ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
 
@@ -1480,7 +1474,7 @@
       if (player.y > canvas.height) {
         lives--;
         updateLivesDisplay();
-        playSound(damageSound);
+        playSound(damageSound, 'sfx');
         if (lives <= 0) {
           endGame();
           return; // Stop update loop
@@ -1578,13 +1572,13 @@
       document.getElementById('scoreDisplay').style.display = 'none';
       livesDisplay.style.display = 'none';
       pauseButton.style.display = 'none';
-      audioControl.style.display = 'flex'; // Tampilkan tombol mute saat game berakhir
-      playSound(gameOverSound);
+      document.querySelector('.audio-controls').style.display = 'flex'; // Tampilkan tombol mute saat game berakhir
+      playSound(gameOverSound, 'sfx');
       gameOverScreen.style.display = 'block';
       setTimeout(() => {
           gameOverScreen.classList.add('show');
       }, 50);
-      playSound(menuBgm);
+      playSound(menuBgm, 'bgm');
       bgm.pause();
     }
 
@@ -1618,7 +1612,7 @@
           player.dy = player.jumpPower;
           player.jumps++;
           createParticles(player.x + player.width/2, player.y + player.height);
-          playSound(jumpSound);
+          playSound(jumpSound, 'sfx');
         }
       }
     });
@@ -1668,7 +1662,7 @@
             player.dy = player.jumpPower;
             player.jumps++;
             createParticles(player.x + player.width/2, player.y + player.height);
-            playSound(jumpSound);
+            playSound(jumpSound, 'sfx');
           }
         }
     });
@@ -1680,7 +1674,7 @@
         return;
       }
 
-      playSound(bgm);
+      playSound(bgm, 'bgm');
       menuBgm.pause();
 
       startScreen.classList.remove('show');
@@ -1691,7 +1685,7 @@
       document.getElementById('scoreDisplay').style.display = 'flex'; 
       livesDisplay.style.display = 'flex';
       pauseButton.style.display = 'block';
-      audioControl.style.display = 'none'; // Sembunyikan tombol mute saat game dimulai
+      document.querySelector('.audio-controls').style.display = 'none'; // Sembunyikan tombol mute saat game dimulai
       
       // Initialize game state
       score = 0;
@@ -1702,19 +1696,20 @@
       player.jumpPower = originalJumpPower; // Reset jump power
       jumpBoostActive = false;
 
+      // Reset platforms, coins, power-ups
       platforms.forEach(p => {
-        if (p.element) p.element.remove();
+        if (p.element) p.element.remove(); // Remove all existing DOM elements
       });
-      platforms.length = 0;
+      platforms.length = 0; // Clear the array
       coins.length = 0;
       powerUps.length = 0;
+      
       player.y = 500; // Reset player position
       player.dy = 0;
       player.speed = 0;
       player.jumps = 0;
 
-      createPlatforms();
-      drawPlatforms(); // Create DOM elements for platforms
+      initializePlatforms(); // Re-initialize platforms and their DOM elements
       updateLivesDisplay();
 
       // Reset canvas theme to default
@@ -1741,15 +1736,15 @@
           pauseScreen.classList.add('show');
         }, 50);
         bgm.pause();
-        audioControl.style.display = 'flex'; // Tampilkan tombol mute saat game dijeda
+        document.querySelector('.audio-controls').style.display = 'flex'; // Tampilkan tombol mute saat game dijeda
       } else {
         pauseScreen.classList.remove('show');
         setTimeout(() => {
           pauseScreen.style.display = 'none';
           update(); // Resume game loop
         }, 500);
-        playSound(bgm);
-        audioControl.style.display = 'none'; // Sembunyikan tombol mute saat game dilanjutkan
+        playSound(bgm, 'bgm');
+        document.querySelector('.audio-controls').style.display = 'none'; // Sembunyikan tombol mute saat game dilanjutkan
       }
     }
 
@@ -1781,7 +1776,10 @@
       }, 500);
       
       // Clear all platform DOM elements when returning to menu
-      document.querySelectorAll('.game-platform').forEach(el => el.remove());
+      platforms.forEach(p => {
+        if (p.element) p.element.remove();
+      });
+      platforms.length = 0; // Clear the array
       document.querySelectorAll('.power-up').forEach(el => el.remove()); // Remove power-up elements
       document.querySelectorAll('.particle').forEach(el => el.remove()); // Remove particle elements
       
@@ -1792,9 +1790,9 @@
       document.getElementById('scoreDisplay').style.display = 'none';
       livesDisplay.style.display = 'none';
       pauseButton.style.display = 'none';
-      audioControl.style.display = 'flex'; // Tampilkan tombol mute saat kembali ke menu utama
+      document.querySelector('.audio-controls').style.display = 'flex'; // Tampilkan tombol mute saat kembali ke menu utama
       loadLeaderboard(); // Reload leaderboard when returning to main menu
-      playSound(menuBgm);
+      playSound(menuBgm, 'bgm');
       bgm.pause();
     }
 
@@ -1846,7 +1844,10 @@
       }, 500);
 
       // Clear all platform DOM elements before restarting
-      document.querySelectorAll('.game-platform').forEach(el => el.remove());
+      platforms.forEach(p => {
+        if (p.element) p.element.remove();
+      });
+      platforms.length = 0; // Clear the array
       document.querySelectorAll('.power-up').forEach(el => el.remove()); // Remove power-up elements
       document.querySelectorAll('.particle').forEach(el => el.remove()); // Remove particle elements
 
@@ -1928,18 +1929,28 @@
       // Load leaderboard on startup
       loadLeaderboard();
 
-      // Set initial audio control icon
-      audioControl.textContent = isAudioMuted ? '🔇' : '🔊';
-      audioControl.addEventListener('click', toggleAudioMute);
-      audioControl.style.display = 'flex'; // Pastikan tombol mute terlihat di menu awal
+      // Set initial audio control icons and states
+      bgmControl.textContent = isBgmMuted ? '🔇' : '🎵';
+      sfxControl.textContent = isSfxMuted ? '🔕' : '🔊';
+      bgmControl.addEventListener('click', toggleBgmMute);
+      sfxControl.addEventListener('click', toggleSfxMute);
+      
+      // Apply initial mute states to audio elements
+      bgm.muted = isBgmMuted;
+      menuBgm.muted = isBgmMuted;
+      jumpSound.muted = isSfxMuted;
+      coinSound.muted = isSfxMuted;
+      gameOverSound.muted = isSfxMuted;
+      powerupSound.muted = isSfxMuted;
+      damageSound.muted = isSfxMuted;
+      buttonSound.muted = isSfxMuted;
 
       // Try to play menu BGM after user interaction (e.g., after loading screen disappears)
-      // This might still be blocked by browser autoplay policies, but it's the best attempt.
       document.addEventListener('click', () => {
-      if (!isAudioMuted && menuBgm.paused) {
-        playSound(menuBgm);
-      }
-    }, { once: true });
+        if (!isBgmMuted && menuBgm.paused) {
+          playSound(menuBgm, 'bgm');
+        }
+      }, { once: true });
     });
 
     // Service Worker registration for PWA
